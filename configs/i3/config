@@ -4,9 +4,7 @@ focus_follows_mouse yes
 
 set $mod Mod4
 set $alt Mod1
-set $term alacritty --working-directory ~
-# Fallback: if alacritty fails, Super+Shift+Enter opens xterm
-
+set $term kitty
 set $browser firefox
 set $files thunar
 
@@ -57,7 +55,7 @@ bindsym $mod+Shift+Return exec xterm
 bindsym $mod+q kill
 
 # App launcher (rofi)
-bindsym $mod+space exec --no-startup-id rofi -show drun -config $HOME/.config/rofi/launcher.rasi
+bindsym $mod+space exec --no-startup-id rofi -show drun
 
 # File manager
 bindsym $mod+e exec $files

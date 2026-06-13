@@ -173,8 +173,11 @@ systemctl enable lightdm
 # ── Fonts ─────────────────────────────────────────────────────────────────────
 
 info "Installing fonts..."
-# Pre-accept MS fonts EULA so it doesn't hang waiting for input
+# Pre-accept MS fonts EULA — must be done before apt even resolves the package
+apt-get install -y debconf-utils 2>/dev/null || true
 echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" \
+    | debconf-set-selections
+echo "ttf-mscorefonts-installer msttcorefonts/present-mscorefonts-eula note" \
     | debconf-set-selections
 apt-get install -y \
     fonts-font-awesome \
@@ -198,12 +201,15 @@ rm -rf "$TMP_FONTS"
 
 info "Installing terminals and shells..."
 apt-get install -y \
-    alacritty \
+    kitty \
     xterm \
     fish \
     zsh \
     zsh-autosuggestions \
     zsh-syntax-highlighting
+
+# Alacritty requires GPU/OpenGL — install but may not work in VMs
+apt-get install -y alacritty 2>/dev/null || warn "alacritty skipped (likely no GPU in VM — kitty is the default terminal)"
 
 # ── System tools ──────────────────────────────────────────────────────────────
 
