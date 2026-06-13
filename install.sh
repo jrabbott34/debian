@@ -76,6 +76,12 @@ EOF
 
 apt-get update -qq
 
+# ── Bootstrap tools (needed before everything else) ───────────────────────────
+# curl/jq/unzip are used by later GitHub download blocks — install them first.
+
+info "Installing bootstrap tools..."
+apt-get install -y curl wget git jq unzip
+
 # ── CPU microcode (auto-detect Intel vs AMD) ──────────────────────────────────
 
 CPU_VENDOR=$(grep -m1 vendor_id /proc/cpuinfo | awk '{print $3}')
@@ -128,18 +134,21 @@ apt-get install -y \
     xdg-desktop-portal-gtk \
     xdg-user-dirs
 
-# ── xidlehook (idle timeout / screen locker trigger) ─────────────────────────
-# Replaces xautolock which was removed from Debian 13.
-# Works alongside xss-lock: after N minutes of idle, signals xss-lock to lock.
+# ── xidlehook (idle screen-blank / lock trigger) ─────────────────────────────
+# Not in Debian repos — best-effort install from GitHub. xss-lock still handles
+# lock-on-suspend without it; this just adds idle-timeout auto-lock.
 
-info "Installing xidlehook..."
-if apt-get install -y xidlehook 2>/dev/null; then
-    ok "xidlehook installed via apt"
+info "Installing xidlehook (optional)..."
+XIDLEHOOK_VER=$(curl -fsSL --max-time 10 \
+    https://api.github.com/repos/jD91mZM2/xidlehook/releases/latest \
+    | jq -r '.tag_name // empty' 2>/dev/null || true)
+if [[ -n "$XIDLEHOOK_VER" ]]; then
+    curl -fsSL --max-time 30 \
+        "https://github.com/jD91mZM2/xidlehook/releases/download/${XIDLEHOOK_VER}/xidlehook-x86_64-unknown-linux-musl.tar.gz" \
+        | tar -xz -C /usr/local/bin xidlehook 2>/dev/null \
+    && ok "xidlehook installed" || warn "xidlehook download failed — skipping (non-fatal)"
 else
-    warn "xidlehook not in apt, installing from GitHub..."
-    XIDLEHOOK_VER=$(curl -fsSL https://api.github.com/repos/jD91mZM2/xidlehook/releases/latest | jq -r .tag_name)
-    curl -fsSL "https://github.com/jD91mZM2/xidlehook/releases/download/${XIDLEHOOK_VER}/xidlehook-x86_64-unknown-linux-musl.tar.gz" \
-        | tar -xz -C /usr/local/bin xidlehook
+    warn "xidlehook release lookup failed — skipping (non-fatal)"
 fi
 
 # ── Nala (apt frontend) ───────────────────────────────────────────────────────
