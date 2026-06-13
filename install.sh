@@ -176,19 +176,21 @@ systemctl enable lightdm
 # ── Fonts ─────────────────────────────────────────────────────────────────────
 
 info "Installing fonts..."
-# Pre-accept MS fonts EULA — must be done before apt even resolves the package
-apt-get install -y debconf-utils 2>/dev/null || true
-echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" \
-    | debconf-set-selections
-echo "ttf-mscorefonts-installer msttcorefonts/present-mscorefonts-eula note" \
-    | debconf-set-selections
 apt-get install -y \
     fonts-font-awesome \
     fonts-powerline \
     fonts-firacode \
     fonts-noto \
-    fonts-noto-color-emoji \
-    ttf-mscorefonts-installer
+    fonts-noto-color-emoji
+
+# MS fonts — requires contrib repo + SourceForge download; non-fatal
+echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" \
+    | debconf-set-selections 2>/dev/null || true
+echo "ttf-mscorefonts-installer msttcorefonts/present-mscorefonts-eula note" \
+    | debconf-set-selections 2>/dev/null || true
+apt-get install -y ttf-mscorefonts-installer 2>/dev/null \
+    && ok "MS fonts installed" \
+    || warn "ttf-mscorefonts-installer unavailable — skipping (install manually later with: sudo apt install ttf-mscorefonts-installer)"
 
 info "Installing Nerd Fonts (FiraCode)..."
 NERD_VER=$(curl -fsSL https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest | jq -r .tag_name)
