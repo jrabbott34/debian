@@ -1,14 +1,100 @@
-/* Rofi app launcher — Nord theme */
+/* Rofi app launcher — Catppuccin Mocha */
 
 configuration {
-    modi:           "drun,run";
-    show-icons:     true;
-    icon-theme:     "Papirus-Dark";
+    modi:                "drun,run";
+    show-icons:          true;
+    icon-theme:          "hicolor";
     drun-display-format: "{name}";
-    display-drun:   "  Apps";
-    display-run:    "  Run";
-    terminal:       "alacritty";
-    kb-cancel:      "Escape";
+    display-drun:        "  Apps";
+    display-run:         "  Run";
+    terminal:            "xterm";
+    kb-cancel:           "Escape";
+    font:                "FiraCode Nerd Font 11";
 }
 
-@import "nord.rasi"
+* {
+    bg:         #1e1e2e;
+    bg-alt:     #313244;
+    fg:         #cdd6f4;
+    fg-dim:     #6c7086;
+    accent:     #cba6f7;
+    urgent:     #f38ba8;
+    selected-bg: #45475a;
+
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+window {
+    background-color: @bg;
+    border:           2px solid;
+    border-color:     @accent;
+    border-radius:    12px;
+    width:            520px;
+    padding:          8px;
+}
+
+mainbox {
+    background-color: transparent;
+    spacing:          0;
+    children:         [inputbar, listview];
+}
+
+inputbar {
+    background-color: @bg-alt;
+    border-radius:    8px 8px 0 0;
+    padding:          10px 14px;
+    spacing:          8px;
+    children:         [prompt, entry];
+}
+
+prompt {
+    background-color: transparent;
+    text-color:       @accent;
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @fg;
+    placeholder:      "Search...";
+    placeholder-color: @fg-dim;
+}
+
+listview {
+    background-color: transparent;
+    padding:          6px 0;
+    lines:            8;
+    scrollbar:        false;
+    spacing:          2px;
+}
+
+element {
+    background-color: transparent;
+    border-radius:    6px;
+    padding:          8px 14px;
+    spacing:          10px;
+    children:         [element-icon, element-text];
+}
+
+element-icon {
+    background-color: transparent;
+    size:             24px;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       @fg;
+    vertical-align:   0.5;
+}
+
+element.selected.normal {
+    background-color: @selected-bg;
+}
+
+element.selected.normal element-text {
+    text-color: @fg;
+}
+
+element.urgent {
+    background-color: @urgent;
+}

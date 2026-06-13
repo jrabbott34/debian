@@ -1,21 +1,55 @@
-/* Rofi power menu theme */
+/* Rofi power menu — Catppuccin Mocha */
 
-@import "nord.rasi"
+* {
+    bg:      #1e1e2e;
+    bg-alt:  #313244;
+    fg:      #cdd6f4;
+    accent:  #f38ba8;
+    selected:#45475a;
+
+    background-color: transparent;
+    text-color:       @fg;
+    font:             "FiraCode Nerd Font 11";
+}
 
 window {
-    width:        220px;
-    border-radius: 8px;
+    background-color: @bg;
+    border:           2px solid;
+    border-color:     @accent;
+    border-radius:    12px;
+    width:            220px;
+    padding:          8px;
+}
+
+mainbox {
+    background-color: transparent;
+    children:         [listview];
 }
 
 listview {
-    lines:  5;
-    padding: 8px 0;
+    background-color: transparent;
+    lines:            5;
+    padding:          4px 0;
+    scrollbar:        false;
+    spacing:          2px;
 }
 
 element {
-    padding: 10px 20px;
+    background-color: transparent;
+    border-radius:    6px;
+    padding:          10px 20px;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       @fg;
+    vertical-align:   0.5;
 }
 
 element.selected.normal {
-    background-color: #BF616A;
+    background-color: @accent;
+}
+
+element.selected.normal element-text {
+    text-color: #1e1e2e;
 }

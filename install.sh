@@ -196,6 +196,7 @@ rm -rf "$TMP_FONTS"
 info "Installing terminals and shells..."
 apt-get install -y \
     alacritty \
+    xterm \
     fish \
     zsh \
     zsh-autosuggestions \
