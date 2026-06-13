@@ -32,6 +32,26 @@ BACKPORTS="${CODENAME}-backports"
 
 # ── Repos ─────────────────────────────────────────────────────────────────────
 
+# Remove DVD/CD-ROM source — the installer adds this and apt will prompt for
+# the disc on every operation if it's left in.
+if grep -q '^deb cdrom:' /etc/apt/sources.list 2>/dev/null; then
+    info "Removing DVD/CD-ROM apt source..."
+    sed -i 's|^deb cdrom:|#deb cdrom:|g' /etc/apt/sources.list
+    ok "CD-ROM source commented out"
+fi
+
+# If sources.list has no network mirror at all (install was done fully offline),
+# add the standard Debian mirror now so the rest of the script can proceed.
+if ! grep -q "^deb http" /etc/apt/sources.list 2>/dev/null; then
+    info "No network mirror found — adding Debian mirror for $CODENAME..."
+    cat >> /etc/apt/sources.list <<EOF
+
+deb http://deb.debian.org/debian ${CODENAME} main
+deb http://deb.debian.org/debian ${CODENAME}-updates main
+deb http://security.debian.org/debian-security ${CODENAME}-security main
+EOF
+fi
+
 info "Enabling contrib/non-free/non-free-firmware..."
 sed -i "s|^deb \(.*\) ${CODENAME} main\$|deb \1 ${CODENAME} main contrib non-free non-free-firmware|" /etc/apt/sources.list
 sed -i "s|^deb \(.*\) ${CODENAME}-updates main\$|deb \1 ${CODENAME}-updates main contrib non-free non-free-firmware|" /etc/apt/sources.list 2>/dev/null || true
