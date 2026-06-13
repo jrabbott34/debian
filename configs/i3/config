@@ -1,5 +1,7 @@
 # i3 config — daily driver X11
 
+focus_follows_mouse yes
+
 set $mod Mod4
 set $alt Mod1
 set $term alacritty --working-directory ~
