@@ -18,7 +18,6 @@ export DEBIAN_FRONTEND=noninteractive
 # ── Detect Debian version ─────────────────────────────────────────────────────
 
 CODENAME=$(grep VERSION_CODENAME /etc/os-release | cut -d= -f2)
-VERSION_ID=$(grep ^VERSION_ID /etc/os-release | cut -d= -f2 | tr -d '"')
 
 case "$CODENAME" in
     bookworm) DEBIAN_VER=12 ;;
@@ -30,18 +29,16 @@ info "Detected Debian $DEBIAN_VER ($CODENAME)"
 
 BACKPORTS="${CODENAME}-backports"
 
-# ── Repos ─────────────────────────────────────────────────────────────────────
+# ── Fix sources.list ──────────────────────────────────────────────────────────
 
-# Remove DVD/CD-ROM source — the installer adds this and apt will prompt for
-# the disc on every operation if it's left in.
+# Remove DVD/CD-ROM — installer adds this, causes disc prompts
 if grep -q '^deb cdrom:' /etc/apt/sources.list 2>/dev/null; then
     info "Removing DVD/CD-ROM apt source..."
     sed -i 's|^deb cdrom:|#deb cdrom:|g' /etc/apt/sources.list
     ok "CD-ROM source commented out"
 fi
 
-# If sources.list has no network mirror at all (install was done fully offline),
-# add the standard Debian mirror now so the rest of the script can proceed.
+# Add network mirror if none exists (fully offline install)
 if ! grep -q "^deb http" /etc/apt/sources.list 2>/dev/null; then
     info "No network mirror found — adding Debian mirror for $CODENAME..."
     cat >> /etc/apt/sources.list <<EOF
@@ -61,26 +58,33 @@ cat > /etc/apt/sources.list.d/backports.list <<EOF
 deb http://deb.debian.org/debian ${BACKPORTS} main contrib non-free non-free-firmware
 EOF
 
+# ── Bootstrap: install curl/jq/unzip BEFORE anything that needs them ──────────
+
+apt-get update -qq
+info "Installing bootstrap tools..."
+apt-get install -y curl wget git jq unzip ca-certificates gnupg
+
+# ── Mozilla Firefox repo (non-fatal if URL changes) ──────────────────────────
+
 info "Adding Mozilla Firefox repo..."
 install -d -m 0755 /etc/apt/keyrings
-curl -fsSL https://packages.mozilla.org/apt/repo-signing-key.gpg \
-    -o /etc/apt/keyrings/packages.mozilla.org.asc
-cat > /etc/apt/sources.list.d/mozilla.list <<'EOF'
+if curl -fsSL --max-time 15 https://packages.mozilla.org/apt/repo-signing-key.gpg \
+        -o /etc/apt/keyrings/packages.mozilla.org.asc 2>/dev/null; then
+    cat > /etc/apt/sources.list.d/mozilla.list <<'EOF'
 deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main
 EOF
-cat > /etc/apt/preferences.d/mozilla <<'EOF'
+    cat > /etc/apt/preferences.d/mozilla <<'EOF'
 Package: *
 Pin: origin packages.mozilla.org
 Pin-Priority: 1001
 EOF
+    ok "Mozilla Firefox repo added"
+else
+    warn "Mozilla repo key fetch failed — will install firefox-esr from Debian repos instead"
+    FIREFOX_PKG="firefox-esr"
+fi
 
 apt-get update -qq
-
-# ── Bootstrap tools (needed before everything else) ───────────────────────────
-# curl/jq/unzip are used by later GitHub download blocks — install them first.
-
-info "Installing bootstrap tools..."
-apt-get install -y curl wget git jq unzip
 
 # ── CPU microcode (auto-detect Intel vs AMD) ──────────────────────────────────
 
@@ -94,13 +98,15 @@ case "$CPU_VENDOR" in
         ;;
 esac
 
-# ── freerdp package name changed in Debian 13 ────────────────────────────────
+# ── Package name differences between Debian 12 and 13 ────────────────────────
 
 if [[ $DEBIAN_VER -ge 13 ]]; then
     FREERDP_PKG="freerdp3-x11"
 else
     FREERDP_PKG="freerdp2-x11"
 fi
+
+FIREFOX_PKG="${FIREFOX_PKG:-firefox}"
 
 # ── Core X11 + i3 ─────────────────────────────────────────────────────────────
 
@@ -123,6 +129,7 @@ apt-get install -y \
     xclip \
     xsel \
     xdotool \
+    xprintidle \
     arandr \
     autorandr \
     flameshot \
@@ -134,12 +141,6 @@ apt-get install -y \
     xdg-desktop-portal-gtk \
     xdg-user-dirs
 
-# ── xprintidle (idle detection for screen locker) ────────────────────────────
-# In Debian repos. Used by the idle-lock.sh script launched from i3.
-
-info "Installing xprintidle..."
-apt-get install -y xprintidle
-
 # ── Nala (apt frontend) ───────────────────────────────────────────────────────
 
 info "Installing nala..."
@@ -148,7 +149,6 @@ apt-get install -y nala
 # ── Fastfetch ─────────────────────────────────────────────────────────────────
 
 info "Installing fastfetch..."
-# Try apt first (available in Trixie main), fall back to GitHub .deb
 if apt-get install -y fastfetch 2>/dev/null; then
     ok "fastfetch installed via apt"
 else
@@ -205,16 +205,12 @@ apt-get install -y \
 
 info "Installing system tools..."
 apt-get install -y \
-    curl \
-    wget \
-    git \
     htop \
     btop \
     bat \
     acpi \
     sysstat \
     iw \
-    jq \
     yad \
     brightnessctl \
     power-profiles-daemon \
@@ -234,7 +230,6 @@ apt-get install -y \
 # ── eza ───────────────────────────────────────────────────────────────────────
 
 info "Installing eza..."
-# In Trixie eza is in main; in Bookworm it needs backports
 if apt-get install -y eza 2>/dev/null; then
     ok "eza installed via apt"
 elif apt-get install -y -t "${BACKPORTS}" eza 2>/dev/null; then
@@ -296,7 +291,7 @@ apt-get install -y \
 
 info "Installing daily apps..."
 apt-get install -y \
-    firefox \
+    "$FIREFOX_PKG" \
     thunderbird \
     libreoffice \
     libreoffice-gtk3 \
@@ -333,7 +328,7 @@ fi
 
 systemctl enable bluetooth
 
-# ── Virtualization groups ──────────────────────────────────────────────────────
+# ── Virtualization groups ─────────────────────────────────────────────────────
 
 REAL_USER="${SUDO_USER:-$(logname 2>/dev/null || echo '')}"
 if [[ -n "$REAL_USER" ]]; then
