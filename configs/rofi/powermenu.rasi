@@ -1,0 +1,21 @@
+/* Rofi power menu theme */
+
+@import "nord.rasi"
+
+window {
+    width:        220px;
+    border-radius: 8px;
+}
+
+listview {
+    lines:  5;
+    padding: 8px 0;
+}
+
+element {
+    padding: 10px 20px;
+}
+
+element.selected.normal {
+    background-color: #BF616A;
+}

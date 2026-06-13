@@ -1,0 +1,271 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Debian i3 daily-driver install script
+# Target: Debian 12 (Bookworm)
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+info()  { echo -e "\033[1;34m[INFO]\033[0m  $*"; }
+ok()    { echo -e "\033[1;32m[ OK ]\033[0m  $*"; }
+warn()  { echo -e "\033[1;33m[WARN]\033[0m  $*"; }
+die()   { echo -e "\033[1;31m[FAIL]\033[0m  $*"; exit 1; }
+
+[[ $EUID -ne 0 ]] && die "Run as root (sudo $0)"
+
+export DEBIAN_FRONTEND=noninteractive
+
+# ── Repos ────────────────────────────────────────────────────────────────────
+
+info "Enabling contrib/non-free/non-free-firmware..."
+sed -i 's/^deb \(.*\) bookworm main$/deb \1 bookworm main contrib non-free non-free-firmware/' /etc/apt/sources.list
+sed -i 's/^deb \(.*\) bookworm-updates main$/deb \1 bookworm-updates main contrib non-free non-free-firmware/' /etc/apt/sources.list 2>/dev/null || true
+
+info "Adding backports..."
+cat > /etc/apt/sources.list.d/backports.list <<'EOF'
+deb http://deb.debian.org/debian bookworm-backports main contrib non-free non-free-firmware
+EOF
+
+info "Adding Mozilla Firefox repo..."
+install -d -m 0755 /etc/apt/keyrings
+curl -fsSL https://packages.mozilla.org/apt/repo-signing-key.gpg \
+    -o /etc/apt/keyrings/packages.mozilla.org.asc
+cat > /etc/apt/sources.list.d/mozilla.list <<'EOF'
+deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main
+EOF
+cat > /etc/apt/preferences.d/mozilla <<'EOF'
+Package: *
+Pin: origin packages.mozilla.org
+Pin-Priority: 1001
+EOF
+
+apt-get update -qq
+
+# ── Core X11 + i3 ────────────────────────────────────────────────────────────
+
+info "Installing X11 + i3 stack..."
+apt-get install -y \
+    xorg \
+    xinit \
+    xserver-xorg \
+    i3-wm \
+    i3lock \
+    i3status \
+    polybar \
+    rofi \
+    picom \
+    feh \
+    nitrogen \
+    dunst \
+    libnotify-bin \
+    xss-lock \
+    xautolock \
+    xclip \
+    xsel \
+    xdotool \
+    arandr \
+    autorandr \
+    flameshot \
+    scrot \
+    redshift \
+    lxappearance \
+    qt5ct \
+    qt6ct \
+    xdg-desktop-portal-gtk \
+    xdg-user-dirs
+
+# ── Display Manager ───────────────────────────────────────────────────────────
+
+info "Installing LightDM..."
+apt-get install -y lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
+systemctl enable lightdm
+
+# ── Fonts ─────────────────────────────────────────────────────────────────────
+
+info "Installing fonts..."
+apt-get install -y \
+    fonts-font-awesome \
+    fonts-powerline \
+    fonts-firacode \
+    fonts-noto \
+    fonts-noto-color-emoji \
+    ttf-mscorefonts-installer
+
+info "Installing Nerd Fonts (FiraCode)..."
+NERD_VER="3.2.1"
+NERD_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/v${NERD_VER}/FiraCode.zip"
+TMP_FONTS=$(mktemp -d)
+curl -fsSL "$NERD_URL" -o "$TMP_FONTS/FiraCode.zip"
+mkdir -p /usr/local/share/fonts/nerd-fonts
+unzip -q "$TMP_FONTS/FiraCode.zip" -d /usr/local/share/fonts/nerd-fonts/FiraCode/
+fc-cache -f
+rm -rf "$TMP_FONTS"
+
+# ── Terminal + Shell ──────────────────────────────────────────────────────────
+
+info "Installing terminals and shells..."
+apt-get install -y \
+    alacritty \
+    fish \
+    zsh \
+    zsh-autosuggestions \
+    zsh-syntax-highlighting
+
+# ── System tools ─────────────────────────────────────────────────────────────
+
+info "Installing system tools..."
+apt-get install -y \
+    curl \
+    wget \
+    git \
+    htop \
+    btop \
+    bat \
+    acpi \
+    sysstat \
+    iw \
+    jq \
+    yad \
+    brightnessctl \
+    power-profiles-daemon \
+    network-manager \
+    network-manager-gnome \
+    network-manager-openvpn \
+    openvpn \
+    gnome-keyring \
+    libsecret-tools \
+    seahorse \
+    policykit-1-gnome \
+    golang \
+    dosfstools \
+    gnome-disk-utility \
+    smartmontools
+
+# ── eza (modern ls) ───────────────────────────────────────────────────────────
+
+info "Installing eza from backports..."
+apt-get install -y -t bookworm-backports eza 2>/dev/null || {
+    warn "eza not in backports, installing from GitHub release..."
+    EZA_VER=$(curl -fsSL https://api.github.com/repos/eza-community/eza/releases/latest | jq -r .tag_name)
+    curl -fsSL "https://github.com/eza-community/eza/releases/download/${EZA_VER}/eza_x86_64-unknown-linux-musl.tar.gz" \
+        | tar -xz -C /usr/local/bin
+}
+
+# ── yazi (terminal file manager) ─────────────────────────────────────────────
+
+info "Installing yazi from GitHub..."
+YAZI_VER=$(curl -fsSL https://api.github.com/repos/sxyazi/yazi/releases/latest | jq -r .tag_name)
+curl -fsSL "https://github.com/sxyazi/yazi/releases/download/${YAZI_VER}/yazi-x86_64-unknown-linux-musl.zip" \
+    -o /tmp/yazi.zip
+unzip -q /tmp/yazi.zip -d /tmp/yazi-extract/
+install -m 755 /tmp/yazi-extract/yazi-x86_64-unknown-linux-musl/yazi /usr/local/bin/yazi
+install -m 755 /tmp/yazi-extract/yazi-x86_64-unknown-linux-musl/ya /usr/local/bin/ya
+rm -rf /tmp/yazi.zip /tmp/yazi-extract
+
+# ── Audio ─────────────────────────────────────────────────────────────────────
+
+info "Installing PipeWire + PulseAudio compat..."
+apt-get install -y \
+    pipewire \
+    pipewire-pulse \
+    pipewire-alsa \
+    wireplumber \
+    pavucontrol \
+    pamixer
+
+# ── Multimedia ────────────────────────────────────────────────────────────────
+
+info "Installing multimedia..."
+apt-get install -y \
+    mpv \
+    cava \
+    yt-dlp \
+    ffmpeg
+
+# ── File manager + desktop utils ─────────────────────────────────────────────
+
+info "Installing Thunar and desktop utils..."
+apt-get install -y \
+    thunar \
+    thunar-volman \
+    thunar-archive-plugin \
+    gvfs \
+    gvfs-backends \
+    samba \
+    tumbler \
+    xfce4-settings \
+    xfce4-notifyd \
+    xarchiver
+
+# ── Apps ──────────────────────────────────────────────────────────────────────
+
+info "Installing daily apps..."
+apt-get install -y \
+    firefox \
+    thunderbird \
+    libreoffice \
+    libreoffice-gtk3 \
+    gedit \
+    mousepad \
+    timeshift \
+    remmina \
+    freerdp2-x11 \
+    virt-manager \
+    qemu-system-x86 \
+    qemu-utils \
+    libvirt-daemon-system \
+    libvirt-clients \
+    ovmf \
+    dnsmasq \
+    nftables \
+    qemu-guest-agent \
+    spice-vdagent \
+    virt-viewer \
+    intel-microcode \
+    firmware-linux \
+    firmware-linux-nonfree \
+    bluez \
+    bluetooth \
+    blueman
+
+# ── Bluetooth ─────────────────────────────────────────────────────────────────
+
+systemctl enable bluetooth
+
+# ── Virtualization group ──────────────────────────────────────────────────────
+
+REAL_USER="${SUDO_USER:-$(logname 2>/dev/null || echo '')}"
+if [[ -n "$REAL_USER" ]]; then
+    usermod -aG libvirt,libvirt-qemu,kvm,video,audio,plugdev,netdev "$REAL_USER"
+    ok "Added $REAL_USER to required groups"
+fi
+
+# ── NetworkManager ────────────────────────────────────────────────────────────
+
+systemctl enable NetworkManager
+# Disable ifupdown management so NM takes over fully
+if grep -q "allow-hotplug\|auto " /etc/network/interfaces 2>/dev/null; then
+    cp /etc/network/interfaces /etc/network/interfaces.bak
+    cat > /etc/network/interfaces <<'EOF'
+# Managed by NetworkManager
+source /etc/network/interfaces.d/*
+
+auto lo
+iface lo inet loopback
+EOF
+fi
+
+# ── Dotfiles ──────────────────────────────────────────────────────────────────
+
+if [[ -n "$REAL_USER" ]]; then
+    info "Installing dotfiles for $REAL_USER..."
+    USER_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+    bash "$SCRIPT_DIR/setup-symlinks.sh" "$REAL_USER" "$USER_HOME"
+fi
+
+ok "Installation complete. Reboot and log in via LightDM."
+echo ""
+echo "  Post-reboot:"
+echo "  - Run: autorandr --detect  (to save monitor layout)"
+echo "  - Set wallpaper: nitrogen ~/.config/wallpapers"
+echo "  - Weather in polybar uses wttr.in for Louisville, KY"
