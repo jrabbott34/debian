@@ -31,7 +31,8 @@ client.urgent           #BF616A  #BF616A  #ECEFF4  #BF616A   #BF616A
 
 # ── Autostart ─────────────────────────────────────────────────────────────────
 exec_always --no-startup-id $HOME/.config/polybar/launch.sh
-exec --no-startup-id picom --config $HOME/.config/picom/picom.conf -b
+# picom disabled in VM — causes input focus issues; uncomment on bare metal
+#exec --no-startup-id picom --config $HOME/.config/picom/picom.conf -b
 exec --no-startup-id dunst
 exec --no-startup-id nm-applet
 exec --no-startup-id /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1

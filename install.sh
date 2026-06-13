@@ -173,6 +173,9 @@ systemctl enable lightdm
 # ── Fonts ─────────────────────────────────────────────────────────────────────
 
 info "Installing fonts..."
+# Pre-accept MS fonts EULA so it doesn't hang waiting for input
+echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" \
+    | debconf-set-selections
 apt-get install -y \
     fonts-font-awesome \
     fonts-powerline \
