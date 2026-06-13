@@ -135,21 +135,13 @@ apt-get install -y \
     xdg-user-dirs
 
 # ── xidlehook (idle screen-blank / lock trigger) ─────────────────────────────
-# Not in Debian repos — best-effort install from GitHub. xss-lock still handles
-# lock-on-suspend without it; this just adds idle-timeout auto-lock.
+# Not in Debian repos — install directly from GitHub latest release.
 
-info "Installing xidlehook (optional)..."
-XIDLEHOOK_VER=$(curl -fsSL --max-time 10 \
-    https://api.github.com/repos/jD91mZM2/xidlehook/releases/latest \
-    | jq -r '.tag_name // empty' 2>/dev/null || true)
-if [[ -n "$XIDLEHOOK_VER" ]]; then
-    curl -fsSL --max-time 30 \
-        "https://github.com/jD91mZM2/xidlehook/releases/download/${XIDLEHOOK_VER}/xidlehook-x86_64-unknown-linux-musl.tar.gz" \
-        | tar -xz -C /usr/local/bin xidlehook 2>/dev/null \
-    && ok "xidlehook installed" || warn "xidlehook download failed — skipping (non-fatal)"
-else
-    warn "xidlehook release lookup failed — skipping (non-fatal)"
-fi
+info "Installing xidlehook..."
+XIDLEHOOK_VER=$(curl -fsSL https://api.github.com/repos/jD91mZM2/xidlehook/releases/latest | jq -r .tag_name)
+curl -fsSL "https://github.com/jD91mZM2/xidlehook/releases/download/${XIDLEHOOK_VER}/xidlehook-x86_64-unknown-linux-musl.tar.gz" \
+    | tar -xz -C /usr/local/bin xidlehook \
+&& ok "xidlehook installed" || warn "xidlehook install failed — skipping (xss-lock still handles suspend/lid lock)"
 
 # ── Nala (apt frontend) ───────────────────────────────────────────────────────
 
