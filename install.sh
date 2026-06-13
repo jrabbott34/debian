@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Debian i3 daily-driver install script
-# Target: Debian 12 (Bookworm)
+# Supports: Debian 12 (Bookworm) and Debian 13 (Trixie)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -15,15 +15,30 @@ die()   { echo -e "\033[1;31m[FAIL]\033[0m  $*"; exit 1; }
 
 export DEBIAN_FRONTEND=noninteractive
 
-# ── Repos ────────────────────────────────────────────────────────────────────
+# ── Detect Debian version ─────────────────────────────────────────────────────
+
+CODENAME=$(grep VERSION_CODENAME /etc/os-release | cut -d= -f2)
+VERSION_ID=$(grep ^VERSION_ID /etc/os-release | cut -d= -f2 | tr -d '"')
+
+case "$CODENAME" in
+    bookworm) DEBIAN_VER=12 ;;
+    trixie)   DEBIAN_VER=13 ;;
+    *)        die "Unsupported Debian release: $CODENAME (need bookworm or trixie)" ;;
+esac
+
+info "Detected Debian $DEBIAN_VER ($CODENAME)"
+
+BACKPORTS="${CODENAME}-backports"
+
+# ── Repos ─────────────────────────────────────────────────────────────────────
 
 info "Enabling contrib/non-free/non-free-firmware..."
-sed -i 's/^deb \(.*\) bookworm main$/deb \1 bookworm main contrib non-free non-free-firmware/' /etc/apt/sources.list
-sed -i 's/^deb \(.*\) bookworm-updates main$/deb \1 bookworm-updates main contrib non-free non-free-firmware/' /etc/apt/sources.list 2>/dev/null || true
+sed -i "s|^deb \(.*\) ${CODENAME} main\$|deb \1 ${CODENAME} main contrib non-free non-free-firmware|" /etc/apt/sources.list
+sed -i "s|^deb \(.*\) ${CODENAME}-updates main\$|deb \1 ${CODENAME}-updates main contrib non-free non-free-firmware|" /etc/apt/sources.list 2>/dev/null || true
 
-info "Adding backports..."
-cat > /etc/apt/sources.list.d/backports.list <<'EOF'
-deb http://deb.debian.org/debian bookworm-backports main contrib non-free non-free-firmware
+info "Adding backports ($BACKPORTS)..."
+cat > /etc/apt/sources.list.d/backports.list <<EOF
+deb http://deb.debian.org/debian ${BACKPORTS} main contrib non-free non-free-firmware
 EOF
 
 info "Adding Mozilla Firefox repo..."
@@ -41,7 +56,27 @@ EOF
 
 apt-get update -qq
 
-# ── Core X11 + i3 ────────────────────────────────────────────────────────────
+# ── CPU microcode (auto-detect Intel vs AMD) ──────────────────────────────────
+
+CPU_VENDOR=$(grep -m1 vendor_id /proc/cpuinfo | awk '{print $3}')
+case "$CPU_VENDOR" in
+    GenuineIntel) MICROCODE_PKG="intel-microcode" ;;
+    AuthenticAMD) MICROCODE_PKG="amd64-microcode" ;;
+    *)
+        warn "Unknown CPU vendor '$CPU_VENDOR', skipping microcode"
+        MICROCODE_PKG=""
+        ;;
+esac
+
+# ── freerdp package name changed in Debian 13 ────────────────────────────────
+
+if [[ $DEBIAN_VER -ge 13 ]]; then
+    FREERDP_PKG="freerdp3-x11"
+else
+    FREERDP_PKG="freerdp2-x11"
+fi
+
+# ── Core X11 + i3 ─────────────────────────────────────────────────────────────
 
 info "Installing X11 + i3 stack..."
 apt-get install -y \
@@ -82,11 +117,16 @@ apt-get install -y nala
 # ── Fastfetch ─────────────────────────────────────────────────────────────────
 
 info "Installing fastfetch..."
-FASTFETCH_VER=$(curl -fsSL https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | jq -r .tag_name)
-curl -fsSL "https://github.com/fastfetch-cli/fastfetch/releases/download/${FASTFETCH_VER}/fastfetch-linux-amd64.deb" \
-    -o /tmp/fastfetch.deb
-apt-get install -y /tmp/fastfetch.deb
-rm -f /tmp/fastfetch.deb
+# Try apt first (available in Trixie main), fall back to GitHub .deb
+if apt-get install -y fastfetch 2>/dev/null; then
+    ok "fastfetch installed via apt"
+else
+    FASTFETCH_VER=$(curl -fsSL https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | jq -r .tag_name)
+    curl -fsSL "https://github.com/fastfetch-cli/fastfetch/releases/download/${FASTFETCH_VER}/fastfetch-linux-amd64.deb" \
+        -o /tmp/fastfetch.deb
+    apt-get install -y /tmp/fastfetch.deb
+    rm -f /tmp/fastfetch.deb
+fi
 
 # ── Speedtest ─────────────────────────────────────────────────────────────────
 
@@ -111,10 +151,10 @@ apt-get install -y \
     ttf-mscorefonts-installer
 
 info "Installing Nerd Fonts (FiraCode)..."
-NERD_VER="3.2.1"
-NERD_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/v${NERD_VER}/FiraCode.zip"
+NERD_VER=$(curl -fsSL https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest | jq -r .tag_name)
 TMP_FONTS=$(mktemp -d)
-curl -fsSL "$NERD_URL" -o "$TMP_FONTS/FiraCode.zip"
+curl -fsSL "https://github.com/ryanoasis/nerd-fonts/releases/download/${NERD_VER}/FiraCode.zip" \
+    -o "$TMP_FONTS/FiraCode.zip"
 mkdir -p /usr/local/share/fonts/nerd-fonts
 unzip -q "$TMP_FONTS/FiraCode.zip" -d /usr/local/share/fonts/nerd-fonts/FiraCode/
 fc-cache -f
@@ -130,7 +170,7 @@ apt-get install -y \
     zsh-autosuggestions \
     zsh-syntax-highlighting
 
-# ── System tools ─────────────────────────────────────────────────────────────
+# ── System tools ──────────────────────────────────────────────────────────────
 
 info "Installing system tools..."
 apt-get install -y \
@@ -160,17 +200,22 @@ apt-get install -y \
     gnome-disk-utility \
     smartmontools
 
-# ── eza (modern ls) ───────────────────────────────────────────────────────────
+# ── eza ───────────────────────────────────────────────────────────────────────
 
-info "Installing eza from backports..."
-apt-get install -y -t bookworm-backports eza 2>/dev/null || {
-    warn "eza not in backports, installing from GitHub release..."
+info "Installing eza..."
+# In Trixie eza is in main; in Bookworm it needs backports
+if apt-get install -y eza 2>/dev/null; then
+    ok "eza installed via apt"
+elif apt-get install -y -t "${BACKPORTS}" eza 2>/dev/null; then
+    ok "eza installed via backports"
+else
+    warn "eza not in repos, installing from GitHub release..."
     EZA_VER=$(curl -fsSL https://api.github.com/repos/eza-community/eza/releases/latest | jq -r .tag_name)
     curl -fsSL "https://github.com/eza-community/eza/releases/download/${EZA_VER}/eza_x86_64-unknown-linux-musl.tar.gz" \
         | tar -xz -C /usr/local/bin
-}
+fi
 
-# ── yazi (terminal file manager) ─────────────────────────────────────────────
+# ── yazi (terminal file manager) ──────────────────────────────────────────────
 
 info "Installing yazi from GitHub..."
 YAZI_VER=$(curl -fsSL https://api.github.com/repos/sxyazi/yazi/releases/latest | jq -r .tag_name)
@@ -201,7 +246,7 @@ apt-get install -y \
     yt-dlp \
     ffmpeg
 
-# ── File manager + desktop utils ─────────────────────────────────────────────
+# ── File manager + desktop utils ──────────────────────────────────────────────
 
 info "Installing Thunar and desktop utils..."
 apt-get install -y \
@@ -228,7 +273,7 @@ apt-get install -y \
     mousepad \
     timeshift \
     remmina \
-    freerdp2-x11 \
+    "$FREERDP_PKG" \
     virt-manager \
     qemu-system-x86 \
     qemu-utils \
@@ -240,18 +285,24 @@ apt-get install -y \
     qemu-guest-agent \
     spice-vdagent \
     virt-viewer \
-    intel-microcode \
     firmware-linux \
     firmware-linux-nonfree \
     bluez \
     bluetooth \
     blueman
 
+# ── CPU microcode ─────────────────────────────────────────────────────────────
+
+if [[ -n "$MICROCODE_PKG" ]]; then
+    info "Installing $MICROCODE_PKG..."
+    apt-get install -y "$MICROCODE_PKG"
+fi
+
 # ── Bluetooth ─────────────────────────────────────────────────────────────────
 
 systemctl enable bluetooth
 
-# ── Virtualization group ──────────────────────────────────────────────────────
+# ── Virtualization groups ──────────────────────────────────────────────────────
 
 REAL_USER="${SUDO_USER:-$(logname 2>/dev/null || echo '')}"
 if [[ -n "$REAL_USER" ]]; then
@@ -262,7 +313,6 @@ fi
 # ── NetworkManager ────────────────────────────────────────────────────────────
 
 systemctl enable NetworkManager
-# Disable ifupdown management so NM takes over fully
 if grep -q "allow-hotplug\|auto " /etc/network/interfaces 2>/dev/null; then
     cp /etc/network/interfaces /etc/network/interfaces.bak
     cat > /etc/network/interfaces <<'EOF'
@@ -282,7 +332,7 @@ if [[ -n "$REAL_USER" ]]; then
     bash "$SCRIPT_DIR/setup-symlinks.sh" "$REAL_USER" "$USER_HOME"
 fi
 
-ok "Installation complete. Reboot and log in via LightDM."
+ok "Installation complete on Debian $DEBIAN_VER ($CODENAME). Reboot and log in via LightDM."
 echo ""
 echo "  Post-reboot:"
 echo "  - Run: autorandr --detect  (to save monitor layout)"

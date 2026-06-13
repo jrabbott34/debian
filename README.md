@@ -1,6 +1,6 @@
 # debian
 
-Debian 12 (Bookworm) daily-driver build — i3 + X11
+Debian 12 (Bookworm) and Debian 13 (Trixie) daily-driver build — i3 + X11
 
 ## Stack
 
