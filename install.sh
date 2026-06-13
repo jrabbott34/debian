@@ -317,6 +317,7 @@ apt-get install -y \
     thunar-archive-plugin \
     gvfs \
     gvfs-backends \
+    gvfs-fuse \
     samba \
     tumbler \
     xfce4-settings \
