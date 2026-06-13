@@ -261,6 +261,14 @@ if [[ -n "$MICROCODE_PKG" ]]; then
     apt-get install -y "$MICROCODE_PKG" || warn "$MICROCODE_PKG unavailable — skipping"
 fi
 
+# ── Touchpad (tap to click) ───────────────────────────────────────────────────
+
+info "Configuring touchpad..."
+apt-get install -y xserver-xorg-input-libinput
+mkdir -p /etc/X11/xorg.conf.d
+cp "$SCRIPT_DIR/configs/xorg/40-touchpad.conf" /etc/X11/xorg.conf.d/40-touchpad.conf
+ok "Tap to click enabled"
+
 # ── Services ──────────────────────────────────────────────────────────────────
 
 systemctl enable bluetooth NetworkManager
