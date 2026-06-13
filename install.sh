@@ -183,14 +183,35 @@ apt-get install -y \
     fonts-noto \
     fonts-noto-color-emoji
 
-# MS fonts — requires contrib repo + SourceForge download; non-fatal
-echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" \
-    | debconf-set-selections 2>/dev/null || true
-echo "ttf-mscorefonts-installer msttcorefonts/present-mscorefonts-eula note" \
-    | debconf-set-selections 2>/dev/null || true
-apt-get install -y ttf-mscorefonts-installer 2>/dev/null \
-    && ok "MS fonts installed" \
-    || warn "ttf-mscorefonts-installer unavailable — skipping (install manually later with: sudo apt install ttf-mscorefonts-installer)"
+# MS fonts — download directly from Debian's font mirror
+info "Installing MS core fonts..."
+MS_FONTS_DIR=$(mktemp -d)
+MS_FONTS=(
+    "andale32.exe"
+    "arial32.exe"
+    "arialb32.exe"
+    "comic32.exe"
+    "courie32.exe"
+    "georgi32.exe"
+    "impact32.exe"
+    "times32.exe"
+    "trebuc32.exe"
+    "verdan32.exe"
+    "webdin32.exe"
+)
+FONT_DEST="/usr/local/share/fonts/ms-fonts"
+mkdir -p "$FONT_DEST"
+apt-get install -y cabextract 2>/dev/null || true
+for font in "${MS_FONTS[@]}"; do
+    curl -fsSL --max-time 30 \
+        "https://downloads.sourceforge.net/corefonts/${font}" \
+        -o "$MS_FONTS_DIR/${font}" 2>/dev/null \
+    && cabextract -q -d "$FONT_DEST" "$MS_FONTS_DIR/${font}" 2>/dev/null \
+    || true
+done
+fc-cache -f "$FONT_DEST" 2>/dev/null || true
+rm -rf "$MS_FONTS_DIR"
+ok "MS fonts installed to $FONT_DEST"
 
 info "Installing Nerd Fonts (FiraCode)..."
 NERD_VER=$(curl -fsSL https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest | jq -r .tag_name)
