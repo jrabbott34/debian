@@ -36,6 +36,7 @@ append_once() {
 
 # ── XDG config dirs ───────────────────────────────────────────────────────────
 link "$CONFIGS/i3"              "$USER_HOME/.config/i3"
+chmod +x "$CONFIGS/i3/scripts/idle-lock.sh" 2>/dev/null || true
 link "$CONFIGS/polybar"         "$USER_HOME/.config/polybar"
 link "$CONFIGS/rofi"            "$USER_HOME/.config/rofi"
 link "$CONFIGS/dunst"           "$USER_HOME/.config/dunst"

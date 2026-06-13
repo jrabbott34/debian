@@ -134,14 +134,11 @@ apt-get install -y \
     xdg-desktop-portal-gtk \
     xdg-user-dirs
 
-# ── xidlehook (idle screen-blank / lock trigger) ─────────────────────────────
-# Not in Debian repos — install directly from GitHub latest release.
+# ── xprintidle (idle detection for screen locker) ────────────────────────────
+# In Debian repos. Used by the idle-lock.sh script launched from i3.
 
-info "Installing xidlehook..."
-XIDLEHOOK_VER=$(curl -fsSL https://api.github.com/repos/jD91mZM2/xidlehook/releases/latest | jq -r .tag_name)
-curl -fsSL "https://github.com/jD91mZM2/xidlehook/releases/download/${XIDLEHOOK_VER}/xidlehook-x86_64-unknown-linux-musl.tar.gz" \
-    | tar -xz -C /usr/local/bin xidlehook \
-&& ok "xidlehook installed" || warn "xidlehook install failed — skipping (xss-lock still handles suspend/lid lock)"
+info "Installing xprintidle..."
+apt-get install -y xprintidle
 
 # ── Nala (apt frontend) ───────────────────────────────────────────────────────
 
