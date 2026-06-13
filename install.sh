@@ -49,9 +49,12 @@ deb http://security.debian.org/debian-security ${CODENAME}-security main
 EOF
 fi
 
-info "Enabling contrib/non-free/non-free-firmware..."
-sed -i "s|^deb \(.*\) ${CODENAME} main\$|deb \1 ${CODENAME} main contrib non-free non-free-firmware|" /etc/apt/sources.list
-sed -i "s|^deb \(.*\) ${CODENAME}-updates main\$|deb \1 ${CODENAME}-updates main contrib non-free non-free-firmware|" /etc/apt/sources.list 2>/dev/null || true
+info "Writing clean sources.list with contrib/non-free/non-free-firmware..."
+cat > /etc/apt/sources.list <<EOF
+deb http://deb.debian.org/debian ${CODENAME} main contrib non-free non-free-firmware
+deb http://deb.debian.org/debian ${CODENAME}-updates main contrib non-free non-free-firmware
+deb http://security.debian.org/debian-security ${CODENAME}-security main contrib non-free non-free-firmware
+EOF
 
 info "Adding backports ($BACKPORTS)..."
 cat > /etc/apt/sources.list.d/backports.list <<EOF
