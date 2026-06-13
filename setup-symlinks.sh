@@ -63,8 +63,13 @@ append_once "$CONFIGS/shell/zshrc_append.sh" \
 # ── Autostart PipeWire ────────────────────────────────────────────────────────
 as_user systemctl --user enable pipewire pipewire-pulse wireplumber 2>/dev/null || true
 
+# ── Home directories ──────────────────────────────────────────────────────────
+for dir in Documents Downloads Music Pictures Pictures/Screenshots git; do
+    as_user mkdir -p "$USER_HOME/$dir"
+    echo "  created: $USER_HOME/$dir"
+done
+
 # ── Wallpapers dir ────────────────────────────────────────────────────────────
 as_user mkdir -p "$USER_HOME/.config/wallpapers"
-as_user mkdir -p "$USER_HOME/Pictures/Screenshots"
 
 echo "Dotfiles linked for $REAL_USER."
