@@ -114,7 +114,6 @@ apt-get install -y \
     dunst \
     libnotify-bin \
     xss-lock \
-    xautolock \
     xclip \
     xsel \
     xdotool \
@@ -128,6 +127,20 @@ apt-get install -y \
     qt6ct \
     xdg-desktop-portal-gtk \
     xdg-user-dirs
+
+# ── xidlehook (idle timeout / screen locker trigger) ─────────────────────────
+# Replaces xautolock which was removed from Debian 13.
+# Works alongside xss-lock: after N minutes of idle, signals xss-lock to lock.
+
+info "Installing xidlehook..."
+if apt-get install -y xidlehook 2>/dev/null; then
+    ok "xidlehook installed via apt"
+else
+    warn "xidlehook not in apt, installing from GitHub..."
+    XIDLEHOOK_VER=$(curl -fsSL https://api.github.com/repos/jD91mZM2/xidlehook/releases/latest | jq -r .tag_name)
+    curl -fsSL "https://github.com/jD91mZM2/xidlehook/releases/download/${XIDLEHOOK_VER}/xidlehook-x86_64-unknown-linux-musl.tar.gz" \
+        | tar -xz -C /usr/local/bin xidlehook
+fi
 
 # ── Nala (apt frontend) ───────────────────────────────────────────────────────
 
