@@ -163,20 +163,7 @@ rm -rf "$MS_FONTS_DIR"
 ok "MS fonts done"
 
 info "Installing Nerd Fonts (FiraCode)..."
-NERD_VER=$(github_latest "ryanoasis/nerd-fonts")
-if [[ -n "$NERD_VER" ]]; then
-    TMP_FONTS=$(mktemp -d)
-    curl -fsSL --max-time 120 \
-        "https://github.com/ryanoasis/nerd-fonts/releases/download/${NERD_VER}/FiraCode.zip" \
-        -o "$TMP_FONTS/FiraCode.zip" \
-    && unzip -q "$TMP_FONTS/FiraCode.zip" -d /usr/local/share/fonts/nerd-fonts/FiraCode/ \
-    && fc-cache -f \
-    && ok "Nerd Fonts installed" \
-    || warn "Nerd Fonts download failed — skipping"
-    rm -rf "$TMP_FONTS"
-else
-    warn "Nerd Fonts GitHub lookup failed — skipping"
-fi
+bash "$SCRIPT_DIR/install-fonts.sh"
 
 # ── Terminals + Shell ─────────────────────────────────────────────────────────
 
