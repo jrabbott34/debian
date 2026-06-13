@@ -23,6 +23,22 @@ Debian 12 (Bookworm) daily-driver build — i3 + X11
 - **Center** — clock/date; click opens `yad` calendar popup
 - **Right** — weather (Louisville, KY) · CPU · RAM · volume · idle inhibitor · system tray
 
+## Shell aliases
+
+Available in bash, zsh, and fish after install:
+
+| Alias | Command |
+|---|---|
+| `c` | `clear` |
+| `update` | `sudo nala update && sudo nala upgrade` |
+| `install` | `sudo nala install` |
+| `speedtest` | `speedtest-cli --simple` |
+| `i3config` | `gedit ~/.config/i3/config` |
+| `polyconfig` | `gedit ~/.config/polybar/config.ini` |
+| `ff` | `fastfetch` |
+| `ls` / `ll` / `lt` | `eza` with icons |
+| `cat` | `bat --style=plain` |
+
 ## Install
 
 ```bash
@@ -74,13 +90,14 @@ configs/
 | Binding | Action |
 |---|---|
 | `Super+Return` | Terminal (Alacritty) |
-| `Super+d` | App launcher (Rofi) |
-| `Super+Shift+e` | Power menu |
+| `Super+space` | App launcher (Rofi) |
+| `Super+x` | Power menu (lock/logout/suspend/reboot/shutdown) |
 | `Super+l` | Lock screen |
 | `Super+q` | Close window |
 | `Super+f` | Fullscreen |
 | `Super+b` | Firefox |
 | `Super+e` | Thunar |
+| `Super+Shift+w` | Random wallpaper (nitrogen) |
 | `Print` | Screenshot (full) |
 | `Super+Print` | Screenshot (region, Flameshot) |
 | `Super+r` | Resize mode |

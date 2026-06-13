@@ -12,7 +12,6 @@ as_user() { sudo -u "$REAL_USER" "$@"; }
 link() {
     local src="$1" dst="$2"
     mkdir -p "$(dirname "$dst")"
-    # Back up any existing non-symlink file
     if [[ -e "$dst" && ! -L "$dst" ]]; then
         mv "$dst" "${dst}.bak"
         echo "  backed up: ${dst}.bak"
@@ -22,17 +21,50 @@ link() {
     echo "  linked: $dst -> $src"
 }
 
+append_once() {
+    local snippet="$1" target="$2" marker="$3"
+    if ! grep -qF "$marker" "$target" 2>/dev/null; then
+        echo "" >> "$target"
+        echo "$marker" >> "$target"
+        cat "$snippet" >> "$target"
+        chown "$REAL_USER:$REAL_USER" "$target"
+        echo "  appended: $target"
+    else
+        echo "  already present: $target"
+    fi
+}
+
+# ── XDG config dirs ───────────────────────────────────────────────────────────
 link "$CONFIGS/i3"              "$USER_HOME/.config/i3"
 link "$CONFIGS/polybar"         "$USER_HOME/.config/polybar"
 link "$CONFIGS/rofi"            "$USER_HOME/.config/rofi"
 link "$CONFIGS/dunst"           "$USER_HOME/.config/dunst"
 link "$CONFIGS/alacritty"       "$USER_HOME/.config/alacritty"
 link "$CONFIGS/picom"           "$USER_HOME/.config/picom"
+link "$CONFIGS/fastfetch"       "$USER_HOME/.config/fastfetch"
+link "$CONFIGS/shell"           "$USER_HOME/.config/shell"
 
-# Autostart PipeWire via user service (enable for real user)
+# ── Fish conf.d ───────────────────────────────────────────────────────────────
+as_user mkdir -p "$USER_HOME/.config/fish/conf.d"
+link "$CONFIGS/shell/fish_aliases.fish" "$USER_HOME/.config/fish/conf.d/aliases.fish"
+
+# ── Bash ──────────────────────────────────────────────────────────────────────
+touch "$USER_HOME/.bashrc"
+append_once "$CONFIGS/shell/bashrc_append.sh" \
+    "$USER_HOME/.bashrc" \
+    "# >>> debian dotfiles >>>"
+
+# ── Zsh ───────────────────────────────────────────────────────────────────────
+touch "$USER_HOME/.zshrc"
+append_once "$CONFIGS/shell/zshrc_append.sh" \
+    "$USER_HOME/.zshrc" \
+    "# >>> debian dotfiles >>>"
+
+# ── Autostart PipeWire ────────────────────────────────────────────────────────
 as_user systemctl --user enable pipewire pipewire-pulse wireplumber 2>/dev/null || true
 
-# Create wallpapers dir
+# ── Wallpapers dir ────────────────────────────────────────────────────────────
 as_user mkdir -p "$USER_HOME/.config/wallpapers"
+as_user mkdir -p "$USER_HOME/Pictures/Screenshots"
 
 echo "Dotfiles linked for $REAL_USER."

@@ -50,7 +50,7 @@ bindsym $mod+Return exec $term
 bindsym $mod+q kill
 
 # App launcher (rofi)
-bindsym $mod+d exec --no-startup-id rofi -show drun -config $HOME/.config/rofi/launcher.rasi
+bindsym $mod+space exec --no-startup-id rofi -show drun -config $HOME/.config/rofi/launcher.rasi
 
 # File manager
 bindsym $mod+e exec $files
@@ -64,7 +64,7 @@ bindsym Print exec --no-startup-id flameshot full -p $HOME/Pictures/Screenshots
 bindsym $mod+Print exec --no-startup-id flameshot gui
 
 # Power menu
-bindsym $mod+Shift+e exec --no-startup-id $HOME/.config/rofi/powermenu.sh
+bindsym $mod+x exec --no-startup-id $HOME/.config/rofi/powermenu.sh
 
 # Lock screen
 bindsym $mod+l exec --no-startup-id i3lock -c 2E3440
@@ -104,8 +104,10 @@ bindsym $mod+v split v
 bindsym $mod+c split h
 
 bindsym $mod+Shift+space floating toggle
-bindsym $mod+space focus mode_toggle
 bindsym $mod+a focus parent
+
+# Wallpaper — pick random from nitrogen library
+bindsym $mod+Shift+w exec --no-startup-id nitrogen --random --set-zoom-fill
 
 # Resize with mouse drag on border
 floating_modifier $mod

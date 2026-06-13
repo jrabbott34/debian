@@ -74,6 +74,25 @@ apt-get install -y \
     xdg-desktop-portal-gtk \
     xdg-user-dirs
 
+# ── Nala (apt frontend) ───────────────────────────────────────────────────────
+
+info "Installing nala..."
+apt-get install -y nala
+
+# ── Fastfetch ─────────────────────────────────────────────────────────────────
+
+info "Installing fastfetch..."
+FASTFETCH_VER=$(curl -fsSL https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | jq -r .tag_name)
+curl -fsSL "https://github.com/fastfetch-cli/fastfetch/releases/download/${FASTFETCH_VER}/fastfetch-linux-amd64.deb" \
+    -o /tmp/fastfetch.deb
+apt-get install -y /tmp/fastfetch.deb
+rm -f /tmp/fastfetch.deb
+
+# ── Speedtest ─────────────────────────────────────────────────────────────────
+
+info "Installing speedtest-cli..."
+apt-get install -y speedtest-cli
+
 # ── Display Manager ───────────────────────────────────────────────────────────
 
 info "Installing LightDM..."
