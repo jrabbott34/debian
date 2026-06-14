@@ -51,8 +51,7 @@ exec nm-applet --indicator
 exec /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
 exec gnome-keyring-daemon --start --components=secrets,pkcs11
 exec waybar
-exec swww-daemon
-exec sleep 1 && swww img $(find ~/Pictures/Wallpapers -type f \( -iname '*.jpg' -o -iname '*.png' \) | shuf -n1) --transition-type fade 2>/dev/null || swaybg -c 1e1e2e
+exec ~/.config/sway/scripts/bg.sh
 
 exec swayidle -w \
     timeout 600  "$locker" \
@@ -89,7 +88,7 @@ bindsym $mod+Shift+f floating toggle
 bindsym $mod+Shift+r reload
 
 # Random wallpaper
-bindsym $mod+Shift+w exec swww img $(find ~/Pictures/Wallpapers -type f \( -iname '*.jpg' -o -iname '*.png' \) | shuf -n1) --transition-type fade
+bindsym $mod+Shift+w exec ~/.config/sway/scripts/bg.sh --random
 
 # Screenshots
 bindsym Print            exec grim ~/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png

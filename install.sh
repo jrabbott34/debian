@@ -85,7 +85,7 @@ fi
 # ── Core packages ─────────────────────────────────────────────────────────────
 info "Installing core Wayland/Sway packages..."
 apt-get install -y \
-    sway swaylock swayidle swaybg swww \
+    sway swaylock swayidle swaybg \
     rofi \
     mako-notifier \
     grim slurp \

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Set wallpaper with swaybg. Pass --random to pick one at random.
 
-WALLPAPER_DIR="$HOME/.config/wallpapers"
+WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
 FALLBACK_COLOR="#1e1e2e"
 
 if [[ "${1:-}" == "--random" ]]; then
