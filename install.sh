@@ -86,6 +86,7 @@ fi
 info "Installing core Wayland/Sway packages..."
 apt-get install -y \
     sway swaylock swayidle swaybg \
+    libinput-tools \
     rofi \
     mako-notifier \
     grim slurp \
