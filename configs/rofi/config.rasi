@@ -10,6 +10,8 @@ configuration {
     terminal:            "kitty";
     kb-cancel:           "Escape";
     font:                "monospace 11";
+    highlight:           none;
+    matching-negate-char: '!';
 }
 
 * {
@@ -86,10 +88,24 @@ element-icon {
 }
 
 element-text {
-    background-color: transparent;
-    text-color:       @fg;
-    vertical-align:   0.5;
-    highlight:        none;
+    background-color:            transparent;
+    text-color:                  @fg;
+    vertical-align:              0.5;
+    highlight:                   none;
+    text-transform:              none;
+}
+
+element-text.selected {
+    text-color: @selected-fg;
+    highlight:  none;
+}
+
+element-text.urgent {
+    highlight: none;
+}
+
+element-text.active {
+    highlight: none;
 }
 
 element.selected.normal {
