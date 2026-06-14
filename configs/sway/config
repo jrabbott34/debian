@@ -26,7 +26,7 @@ input "type:touchpad" {
 }
 
 input "type:keyboard" {
-    xkb_options caps:escape
+    # xkb_options caps:escape  # uncomment to remap caps lock to escape
 }
 
 # ── Gaps & borders ────────────────────────────────────────────────────────────
@@ -209,6 +209,12 @@ for_window [app_id="qt6ct"]        floating enable
 for_window [app_id="yad"]          floating enable
 for_window [title="(?i).*calculator.*"] floating enable
 
+# Thunar file operation dialogs (copy/move progress windows)
+for_window [app_id="thunar" title="(?i).*(copy|move|delete|progress|transfer).*"] floating enable
+for_window [app_id="thunar" title="Copying.*"]  floating enable
+for_window [app_id="thunar" title="Moving.*"]   floating enable
+for_window [app_id="thunar" title="Deleting.*"] floating enable
+
 # Picture-in-picture
 for_window [title="Picture-in-Picture"] floating enable, sticky enable
 
@@ -216,6 +222,14 @@ for_window [title="Picture-in-Picture"] floating enable, sticky enable
 for_window [class="Pavucontrol"] floating enable
 for_window [class="Blueman-manager"] floating enable
 for_window [class="Lxappearance"] floating enable
+
+# ── Gestures ─────────────────────────────────────────────────────────────────
+# 3-finger swipe left/right to switch workspaces
+bindgesture swipe:3:right workspace prev
+bindgesture swipe:3:left  workspace next
+# 4-finger swipe up/down to move window to adjacent workspace
+bindgesture swipe:4:right move container to workspace prev, workspace prev
+bindgesture swipe:4:left  move container to workspace next, workspace next
 
 # ── Include ───────────────────────────────────────────────────────────────────
 include /etc/sway/config.d/*

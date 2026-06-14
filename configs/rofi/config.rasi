@@ -15,7 +15,11 @@ configuration {
 @theme "catppuccin-mocha"
 
 * {
-    width: 680px;
+    width: 800px;
+}
+
+listview {
+    lines: 6;
 }
 
 window {
