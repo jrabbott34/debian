@@ -84,6 +84,40 @@ if [ -f "$TOUCHPAD_CONF" ]; then
     info "Copied touchpad config to /etc/X11/xorg.conf.d/"
 fi
 
+# ── GTK dark theme ───────────────────────────────────────────────────────────
+info "Setting GTK dark theme via gsettings..."
+mkdir -p ~/.config/gtk-3.0 ~/.config/gtk-4.0
+
+cat > ~/.config/gtk-3.0/settings.ini <<'EOF'
+[Settings]
+gtk-application-prefer-dark-theme=1
+gtk-theme-name=Adwaita-dark
+gtk-icon-theme-name=Papirus-Dark
+gtk-font-name=Noto Sans 11
+gtk-cursor-theme-name=Adwaita
+EOF
+
+cat > ~/.config/gtk-4.0/settings.ini <<'EOF'
+[Settings]
+gtk-application-prefer-dark-theme=1
+gtk-theme-name=Adwaita-dark
+gtk-icon-theme-name=Papirus-Dark
+gtk-font-name=Noto Sans 11
+gtk-cursor-theme-name=Adwaita
+EOF
+
+# gsettings works on Wayland and is what Thunar actually reads
+if command -v gsettings &>/dev/null; then
+    gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+    gsettings set org.gnome.desktop.interface gtk-theme 'Adwaita-dark'
+    gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
+    gsettings set org.gnome.desktop.interface font-name 'Noto Sans 11'
+    gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
+    info "gsettings dark theme applied"
+else
+    warn "gsettings not found — install dconf-gsettings-backend"
+fi
+
 info "All symlinks created!"
-info "Wallpapers: drop images in ~/.config/wallpapers/"
+info "Wallpapers: drop images in ~/Pictures/Wallpapers/"
 info "Reboot or log into a Sway session to apply."
