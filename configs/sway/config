@@ -14,9 +14,7 @@ set $files thunar
 set $locker swaylock -f -c 1e1e2e
 
 # ── Output ────────────────────────────────────────────────────────────────────
-output * bg ~/.config/wallpapers/wallpaper.jpg fill
-# Fallback solid color if wallpaper missing
-# output * bg #1e1e2e solid_color
+output * bg #1e1e2e solid_color
 
 # ── Input ─────────────────────────────────────────────────────────────────────
 input "type:touchpad" {
@@ -78,7 +76,7 @@ bindsym $mod+e exec $files
 bindsym $mod+q kill
 
 # Lock
-bindsym $mod+Shift+l exec $locker
+bindsym $mod+Shift+e exec $locker
 
 # Fullscreen
 bindsym $mod+f fullscreen toggle
@@ -101,20 +99,12 @@ bindsym $mod+Shift+Print exec grim -g "$(slurp)" - | wl-copy
 bindsym $mod+x exec ~/.config/rofi/scripts/powermenu.sh
 
 # Focus movement
-bindsym $mod+$left  focus left
-bindsym $mod+$down  focus down
-bindsym $mod+$up    focus up
-bindsym $mod+$right focus right
 bindsym $mod+Left   focus left
 bindsym $mod+Down   focus down
 bindsym $mod+Up     focus up
 bindsym $mod+Right  focus right
 
 # Move window
-bindsym $mod+Shift+$left  move left
-bindsym $mod+Shift+$down  move down
-bindsym $mod+Shift+$up    move up
-bindsym $mod+Shift+$right move right
 bindsym $mod+Shift+Left   move left
 bindsym $mod+Shift+Down   move down
 bindsym $mod+Shift+Up     move up
