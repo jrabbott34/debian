@@ -136,7 +136,7 @@ apt-get install -y \
     nala fastfetch htop btop \
     eza bat ripgrep fd-find \
     vim \
-    brightnessctl \
+    brightnessctl imagemagick \
     power-profiles-daemon \
     gnome-keyring libsecret-tools seahorse \
     || warn "Some utilities failed"
