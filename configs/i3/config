@@ -171,9 +171,9 @@ for_window [title="Picture-in-Picture"] floating enable sticky enable
 
 # ── Audio (PipeWire/PulseAudio) ───────────────────────────────────────────────
 
-bindsym XF86AudioRaiseVolume  exec --no-startup-id pamixer -i 5 && pkill -RTMIN+11 polybar
-bindsym XF86AudioLowerVolume  exec --no-startup-id pamixer -d 5 && pkill -RTMIN+11 polybar
-bindsym XF86AudioMute         exec --no-startup-id pamixer -t   && pkill -RTMIN+11 polybar
+bindsym XF86AudioRaiseVolume  exec --no-startup-id pamixer -i 5
+bindsym XF86AudioLowerVolume  exec --no-startup-id pamixer -d 5
+bindsym XF86AudioMute         exec --no-startup-id pamixer -t
 
 # ── Brightness ────────────────────────────────────────────────────────────────
 
