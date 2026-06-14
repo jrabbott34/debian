@@ -85,7 +85,7 @@ fi
 # ── Core packages ─────────────────────────────────────────────────────────────
 info "Installing core Wayland/Sway packages..."
 apt-get install -y \
-    sway swaylock swayidle swaybg \
+    sway swaylock swayidle swaybg swww \
     rofi \
     mako-notifier \
     grim slurp \
@@ -194,11 +194,32 @@ systemctl enable NetworkManager 2>/dev/null || warn "NetworkManager enable faile
 systemctl enable bluetooth 2>/dev/null || warn "bluetooth enable failed"
 systemctl enable libvirtd 2>/dev/null || warn "libvirtd enable failed"
 
-# Add user to groups
+# Add user to groups + create dirs + download wallpapers
 if [ -n "${SUDO_USER:-}" ]; then
+    USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+
     info "Adding $SUDO_USER to groups..."
     for grp in libvirt libvirt-qemu kvm input video audio plugdev bluetooth; do
         usermod -aG "$grp" "$SUDO_USER" 2>/dev/null || true
+    done
+
+    info "Creating user directories..."
+    sudo -u "$SUDO_USER" mkdir -p \
+        "$USER_HOME/Documents" \
+        "$USER_HOME/Downloads" \
+        "$USER_HOME/Music" \
+        "$USER_HOME/Pictures/Screenshots" \
+        "$USER_HOME/Pictures/Wallpapers" \
+        "$USER_HOME/git"
+
+    info "Downloading Catppuccin wallpapers..."
+    WALL_DIR="$USER_HOME/Pictures/Wallpapers"
+    WALL_BASE="https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/main"
+    for img in landscapes/mountain.jpg landscapes/valley.jpg minimalistic/leaves.jpg; do
+        fname=$(basename "$img")
+        curl -fsSL --max-time 30 "$WALL_BASE/$img" -o "$WALL_DIR/$fname" 2>/dev/null \
+            && chown "$SUDO_USER:$SUDO_USER" "$WALL_DIR/$fname" \
+            || warn "Could not download wallpaper: $fname"
     done
 fi
 

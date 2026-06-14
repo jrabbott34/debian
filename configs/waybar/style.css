@@ -142,6 +142,32 @@ window#waybar.hidden {
     color: @red;
 }
 
+/* Battery */
+#battery {
+    color: @green;
+}
+
+#battery.charging {
+    color: @teal;
+}
+
+#battery.plugged {
+    color: @teal;
+}
+
+#battery.warning:not(.charging) {
+    color: @yellow;
+}
+
+#battery.critical:not(.charging) {
+    color: @red;
+    animation: blink 0.5s linear infinite alternate;
+}
+
+@keyframes blink {
+    to { color: @base; background-color: @red; border-radius: 12px; }
+}
+
 /* Idle inhibitor */
 #idle_inhibitor {
     color: @subtext0;

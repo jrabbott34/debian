@@ -51,7 +51,8 @@ exec nm-applet --indicator
 exec /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
 exec gnome-keyring-daemon --start --components=secrets,pkcs11
 exec waybar
-exec swaybg -i ~/.config/wallpapers/wallpaper.jpg -m fill || swaybg -c 1e1e2e
+exec swww-daemon
+exec sleep 1 && swww img $(find ~/Pictures/Wallpapers -type f \( -iname '*.jpg' -o -iname '*.png' \) | shuf -n1) --transition-type fade 2>/dev/null || swaybg -c 1e1e2e
 
 exec swayidle -w \
     timeout 600  "$locker" \
@@ -88,7 +89,7 @@ bindsym $mod+Shift+f floating toggle
 bindsym $mod+Shift+r reload
 
 # Random wallpaper
-bindsym $mod+Shift+w exec "find ~/.config/wallpapers -type f \( -iname '*.jpg' -o -iname '*.png' \) | shuf -n1 | xargs -I{} swaymsg output '*' bg '{}' fill"
+bindsym $mod+Shift+w exec swww img $(find ~/Pictures/Wallpapers -type f \( -iname '*.jpg' -o -iname '*.png' \) | shuf -n1) --transition-type fade
 
 # Screenshots
 bindsym Print            exec grim ~/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png
@@ -187,12 +188,17 @@ bindsym XF86AudioPrev  exec playerctl previous
 
 # ── Window rules ──────────────────────────────────────────────────────────────
 
-# Workspace assignments
+# Workspace assignments + auto-focus
 assign [app_id="firefox"]          $ws2
 assign [app_id="thunderbird"]      $ws3
 assign [app_id="thunar"]           $ws4
 assign [app_id="libreoffice.*"]    $ws5
 assign [app_id="virt-manager"]     $ws9
+
+for_window [app_id="firefox"]       focus
+for_window [app_id="thunderbird"]   focus
+for_window [app_id="thunar"]        focus
+for_window [app_id="libreoffice.*"] focus
 
 # Floating windows
 for_window [app_id="pavucontrol"]  floating enable
