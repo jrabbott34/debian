@@ -1,308 +1,194 @@
 #!/usr/bin/env bash
-# Debian i3 daily-driver install script
-# Supports: Debian 12 (Bookworm) and Debian 13 (Trixie)
+# Debian 12/13 Sway/Wayland daily-driver installer
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOGFILE="/tmp/debian-setup-$(date +%Y%m%d-%H%M%S).log"
+exec > >(tee -a "$LOGFILE") 2>&1
 
-info()  { echo -e "\033[1;34m[INFO]\033[0m  $*"; }
-ok()    { echo -e "\033[1;32m[ OK ]\033[0m  $*"; }
-warn()  { echo -e "\033[1;33m[WARN]\033[0m  $*"; }
-die()   { echo -e "\033[1;31m[FAIL]\033[0m  $*"; exit 1; }
+GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
+info()  { echo -e "${GREEN}[INFO]${NC}  $*"; }
+warn()  { echo -e "${YELLOW}[WARN]${NC}  $*"; }
+error() { echo -e "${RED}[ERROR]${NC} $*"; }
 
-# github_latest <owner/repo> — prints the latest tag, empty string on failure
-github_latest() {
-    curl -fsSL --max-time 15 \
-        "https://api.github.com/repos/$1/releases/latest" \
-        2>/dev/null | jq -r '.tag_name // empty' 2>/dev/null || true
-}
+need_root() { [ "$(id -u)" -eq 0 ] || { error "Run as root"; exit 1; }; }
+need_root
 
-[[ $EUID -ne 0 ]] && die "Run as root (sudo $0)"
-
-export DEBIAN_FRONTEND=noninteractive
+# ── Bootstrap tools ──────────────────────────────────────────────────────────
+info "Installing bootstrap tools..."
+apt-get update -qq
+apt-get install -y curl wget git jq unzip ca-certificates gnupg cabextract apt-transport-https
 
 # ── Detect Debian version ─────────────────────────────────────────────────────
+CODENAME=$(. /etc/os-release && echo "$VERSION_CODENAME")
+info "Detected Debian: $CODENAME"
 
-CODENAME=$(grep VERSION_CODENAME /etc/os-release | cut -d= -f2)
-
-case "$CODENAME" in
-    bookworm) DEBIAN_VER=12 ;;
-    trixie)   DEBIAN_VER=13 ;;
-    *)        die "Unsupported Debian release: $CODENAME (need bookworm or trixie)" ;;
-esac
-
-info "Detected Debian $DEBIAN_VER ($CODENAME)"
-BACKPORTS="${CODENAME}-backports"
-
-# ── Fix sources.list ──────────────────────────────────────────────────────────
-
-if grep -q '^deb cdrom:' /etc/apt/sources.list 2>/dev/null; then
-    info "Removing DVD/CD-ROM apt source..."
-    sed -i 's|^deb cdrom:|#deb cdrom:|g' /etc/apt/sources.list
-fi
-
-info "Writing clean sources.list with contrib/non-free..."
+# ── Clean sources.list ────────────────────────────────────────────────────────
+info "Writing sources.list..."
 cat > /etc/apt/sources.list <<EOF
-deb http://deb.debian.org/debian ${CODENAME} main contrib non-free non-free-firmware
-deb http://deb.debian.org/debian ${CODENAME}-updates main contrib non-free non-free-firmware
-deb http://security.debian.org/debian-security ${CODENAME}-security main contrib non-free non-free-firmware
+deb http://deb.debian.org/debian $CODENAME main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian $CODENAME main contrib non-free non-free-firmware
+
+deb http://security.debian.org/debian-security $CODENAME-security main contrib non-free non-free-firmware
+deb-src http://security.debian.org/debian-security $CODENAME-security main contrib non-free non-free-firmware
+
+deb http://deb.debian.org/debian $CODENAME-updates main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian $CODENAME-updates main contrib non-free non-free-firmware
+
+deb http://deb.debian.org/debian $CODENAME-backports main contrib non-free non-free-firmware
 EOF
 
-cat > /etc/apt/sources.list.d/backports.list <<EOF
-deb http://deb.debian.org/debian ${BACKPORTS} main contrib non-free non-free-firmware
-EOF
-
-# ── Bootstrap ─────────────────────────────────────────────────────────────────
+# Remove cdrom entries if any
+sed -i '/^deb cdrom:/d' /etc/apt/sources.list
 
 apt-get update -qq
-info "Installing bootstrap tools..."
-apt-get install -y curl wget git jq unzip ca-certificates gnupg cabextract
 
-# ── Mozilla Firefox repo ──────────────────────────────────────────────────────
+# ── Microcode ─────────────────────────────────────────────────────────────────
+info "Detecting CPU for microcode..."
+if grep -q "GenuineIntel" /proc/cpuinfo 2>/dev/null; then
+    apt-get install -y intel-microcode || warn "intel-microcode failed"
+elif grep -q "AuthenticAMD" /proc/cpuinfo 2>/dev/null; then
+    apt-get install -y amd64-microcode || warn "amd64-microcode failed"
+fi
 
-info "Adding Mozilla Firefox repo..."
-install -d -m 0755 /etc/apt/keyrings
-FIREFOX_PKG="firefox-esr"
-if curl -fsSL --max-time 15 https://packages.mozilla.org/apt/repo-signing-key.gpg \
-        -o /etc/apt/keyrings/packages.mozilla.org.asc 2>/dev/null; then
-    cat > /etc/apt/sources.list.d/mozilla.list <<'EOF'
-deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main
-EOF
-    cat > /etc/apt/preferences.d/mozilla <<'EOF'
+# ── GitHub latest helper ──────────────────────────────────────────────────────
+github_latest() {
+    local repo="$1"
+    curl -fsSL "https://api.github.com/repos/${repo}/releases/latest" \
+        | jq -r '.tag_name' 2>/dev/null || echo ""
+}
+
+# ── Firefox ───────────────────────────────────────────────────────────────────
+info "Installing Firefox..."
+FIREFOX_OK=0
+# Try Mozilla repo first
+if curl -fsSL https://packages.mozilla.org/apt/repo-signing-key.gpg \
+        -o /usr/share/keyrings/mozilla.gpg 2>/dev/null; then
+    echo "deb [signed-by=/usr/share/keyrings/mozilla.gpg] https://packages.mozilla.org/apt mozilla main" \
+        > /etc/apt/sources.list.d/mozilla.list
+    cat > /etc/apt/preferences.d/mozilla <<'PREF'
 Package: *
 Pin: origin packages.mozilla.org
 Pin-Priority: 1001
-EOF
-    FIREFOX_PKG="firefox"
-    ok "Mozilla Firefox repo added"
-else
-    warn "Mozilla repo unavailable — using firefox-esr from Debian repos"
+PREF
+    apt-get update -qq
+    apt-get install -y firefox && FIREFOX_OK=1 || warn "Mozilla repo Firefox failed, falling back"
+fi
+if [ "$FIREFOX_OK" -eq 0 ]; then
+    apt-get install -y firefox-esr || warn "firefox-esr also failed"
 fi
 
-apt-get update -qq
-
-# ── Per-version package names ─────────────────────────────────────────────────
-
-CPU_VENDOR=$(grep -m1 vendor_id /proc/cpuinfo | awk '{print $3}')
-case "$CPU_VENDOR" in
-    GenuineIntel) MICROCODE_PKG="intel-microcode" ;;
-    AuthenticAMD) MICROCODE_PKG="amd64-microcode" ;;
-    *)            MICROCODE_PKG="" ;;
-esac
-
-FREERDP_PKG="freerdp2-x11"
-[[ $DEBIAN_VER -ge 13 ]] && FREERDP_PKG="freerdp3-x11"
-
-# ── Core X11 + i3 ─────────────────────────────────────────────────────────────
-
-info "Installing X11 + i3 stack..."
+# ── Core packages ─────────────────────────────────────────────────────────────
+info "Installing core Wayland/Sway packages..."
 apt-get install -y \
-    xorg xinit xserver-xorg \
-    i3-wm i3lock i3status \
-    polybar rofi picom \
-    feh nitrogen dunst libnotify-bin \
-    xss-lock xclip xsel xdotool xprintidle \
-    arandr autorandr flameshot scrot \
-    redshift lxappearance qt5ct qt6ct \
-    xdg-desktop-portal-gtk xdg-user-dirs
+    sway swaylock swayidle swaybg \
+    waybar \
+    rofi \
+    mako-notifier \
+    grim slurp \
+    wl-clipboard \
+    xdg-desktop-portal-wlr xdg-desktop-portal-gtk \
+    gammastep \
+    wlr-randr \
+    ydotool \
+    qt5-wayland qt6-wayland \
+    policykit-1-gnome \
+    xwayland \
+    kitty xterm foot \
+    || warn "Some Wayland packages failed — check log"
 
-# ── Nala ──────────────────────────────────────────────────────────────────────
+info "Installing desktop apps..."
+apt-get install -y \
+    thunar gvfs gvfs-backends gvfs-fuse samba tumbler \
+    xfce4-settings xfce4-notifyd xarchiver \
+    mousepad gedit \
+    yad \
+    lxappearance qt5ct \
+    || warn "Some desktop apps failed"
 
-info "Installing nala..."
-apt-get install -y nala
+info "Installing audio (PipeWire)..."
+apt-get install -y \
+    pipewire pipewire-pulse pipewire-alsa wireplumber \
+    pavucontrol pamixer \
+    || warn "Some audio packages failed"
 
-# ── Fastfetch ─────────────────────────────────────────────────────────────────
+info "Installing productivity apps..."
+apt-get install -y \
+    thunderbird libreoffice \
+    || warn "Some productivity apps failed"
 
-info "Installing fastfetch..."
-if ! apt-get install -y fastfetch 2>/dev/null; then
-    VER=$(github_latest "fastfetch-cli/fastfetch")
-    if [[ -n "$VER" ]]; then
-        curl -fsSL --max-time 60 \
-            "https://github.com/fastfetch-cli/fastfetch/releases/download/${VER}/fastfetch-linux-amd64.deb" \
-            -o /tmp/fastfetch.deb \
-        && apt-get install -y /tmp/fastfetch.deb \
-        && ok "fastfetch installed from GitHub" \
-        || warn "fastfetch install failed — skipping"
-        rm -f /tmp/fastfetch.deb
-    else
-        warn "fastfetch GitHub lookup failed — skipping"
-    fi
-fi
+info "Installing network/bluetooth..."
+apt-get install -y \
+    network-manager network-manager-gnome \
+    bluez bluetooth blueman \
+    || warn "Some network/bt packages failed"
 
-# ── Speedtest ─────────────────────────────────────────────────────────────────
+info "Installing system utilities..."
+apt-get install -y \
+    nala fastfetch htop btop \
+    brightnessctl \
+    gnome-keyring libsecret-tools seahorse \
+    || warn "Some utilities failed"
 
 info "Installing speedtest-cli..."
-apt-get install -y speedtest-cli || warn "speedtest-cli unavailable — skipping"
+apt-get install -y speedtest-cli || \
+    pip3 install speedtest-cli 2>/dev/null || \
+    warn "speedtest-cli failed"
 
-# ── Display Manager ───────────────────────────────────────────────────────────
+info "Installing virtualization packages..."
+apt-get install -y \
+    qemu-system-x86 qemu-utils libvirt-daemon-system libvirt-clients \
+    virt-manager ovmf bridge-utils \
+    || warn "Some virt packages failed"
 
+# ── Display manager ───────────────────────────────────────────────────────────
 info "Installing LightDM..."
-apt-get install -y lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
-systemctl enable lightdm
+apt-get install -y lightdm lightdm-gtk-greeter || warn "lightdm failed"
 
-# ── Fonts ─────────────────────────────────────────────────────────────────────
-
-info "Installing fonts..."
-apt-get install -y \
-    fonts-font-awesome fonts-powerline fonts-firacode \
-    fonts-noto fonts-noto-color-emoji
-
-info "Installing MS core fonts..."
-MS_FONTS_DIR=$(mktemp -d)
-FONT_DEST="/usr/local/share/fonts/ms-fonts"
-mkdir -p "$FONT_DEST"
-for font in andale32.exe arial32.exe arialb32.exe comic32.exe courie32.exe \
-            georgi32.exe impact32.exe times32.exe trebuc32.exe verdan32.exe webdin32.exe; do
-    curl -fsSL --max-time 30 \
-        "https://downloads.sourceforge.net/corefonts/${font}" \
-        -o "$MS_FONTS_DIR/${font}" 2>/dev/null \
-    && cabextract -q -d "$FONT_DEST" "$MS_FONTS_DIR/${font}" 2>/dev/null \
-    || true
-done
-fc-cache -f "$FONT_DEST" 2>/dev/null || true
-rm -rf "$MS_FONTS_DIR"
-ok "MS fonts done"
-
-info "Installing Nerd Fonts (FiraCode)..."
-bash "$SCRIPT_DIR/install-fonts.sh"
-
-# ── Terminals + Shell ─────────────────────────────────────────────────────────
-
-info "Installing terminals and shells..."
-apt-get install -y kitty xterm fish zsh zsh-autosuggestions zsh-syntax-highlighting
-apt-get install -y alacritty 2>/dev/null \
-    && ok "alacritty installed" \
-    || warn "alacritty skipped (no GPU/OpenGL — kitty is default)"
-
-# ── System tools ──────────────────────────────────────────────────────────────
-
-info "Installing system tools..."
-apt-get install -y \
-    htop btop bat acpi sysstat iw yad \
-    brightnessctl power-profiles-daemon \
-    network-manager network-manager-gnome \
-    network-manager-openvpn openvpn \
-    gnome-keyring libsecret-tools seahorse \
-    policykit-1-gnome golang \
-    dosfstools gnome-disk-utility smartmontools
-
-# ── eza ───────────────────────────────────────────────────────────────────────
-
-info "Installing eza..."
-if ! apt-get install -y eza 2>/dev/null && \
-   ! apt-get install -y -t "${BACKPORTS}" eza 2>/dev/null; then
-    VER=$(github_latest "eza-community/eza")
-    if [[ -n "$VER" ]]; then
-        curl -fsSL --max-time 60 \
-            "https://github.com/eza-community/eza/releases/download/${VER}/eza_x86_64-unknown-linux-musl.tar.gz" \
-            | tar -xz -C /usr/local/bin \
-        && ok "eza installed from GitHub" \
-        || warn "eza install failed — skipping"
-    else
-        warn "eza not available — skipping"
-    fi
-fi
-
-# ── yazi ──────────────────────────────────────────────────────────────────────
-
-info "Installing yazi..."
-YAZI_VER=$(github_latest "sxyazi/yazi")
-if [[ -n "$YAZI_VER" ]]; then
-    curl -fsSL --max-time 60 \
-        "https://github.com/sxyazi/yazi/releases/download/${YAZI_VER}/yazi-x86_64-unknown-linux-musl.zip" \
-        -o /tmp/yazi.zip \
-    && unzip -q /tmp/yazi.zip -d /tmp/yazi-extract/ \
-    && install -m 755 /tmp/yazi-extract/yazi-x86_64-unknown-linux-musl/yazi /usr/local/bin/yazi \
-    && install -m 755 /tmp/yazi-extract/yazi-x86_64-unknown-linux-musl/ya /usr/local/bin/ya \
-    && ok "yazi installed" \
-    || warn "yazi install failed — skipping"
-    rm -rf /tmp/yazi.zip /tmp/yazi-extract
-else
-    warn "yazi GitHub lookup failed — skipping"
-fi
-
-# ── Audio ─────────────────────────────────────────────────────────────────────
-
-info "Installing PipeWire..."
-apt-get install -y \
-    pipewire pipewire-pulse pipewire-alsa wireplumber pavucontrol pamixer
-
-# ── Multimedia ────────────────────────────────────────────────────────────────
-
-info "Installing multimedia..."
-apt-get install -y mpv cava yt-dlp ffmpeg
-
-# ── File manager ──────────────────────────────────────────────────────────────
-
-info "Installing Thunar and desktop utils..."
-apt-get install -y \
-    thunar thunar-volman thunar-archive-plugin \
-    gvfs gvfs-backends gvfs-fuse \
-    samba tumbler xfce4-settings xfce4-notifyd xarchiver
-
-# ── Apps ──────────────────────────────────────────────────────────────────────
-
-info "Installing daily apps..."
-apt-get install -y \
-    "$FIREFOX_PKG" thunderbird \
-    libreoffice libreoffice-gtk3 \
-    gedit mousepad timeshift \
-    remmina "$FREERDP_PKG" \
-    virt-manager qemu-system-x86 qemu-utils \
-    libvirt-daemon-system libvirt-clients ovmf \
-    dnsmasq nftables \
-    qemu-guest-agent spice-vdagent virt-viewer \
-    firmware-linux firmware-linux-nonfree \
-    bluez bluetooth blueman
-
-# ── CPU microcode ─────────────────────────────────────────────────────────────
-
-if [[ -n "$MICROCODE_PKG" ]]; then
-    info "Installing $MICROCODE_PKG..."
-    apt-get install -y "$MICROCODE_PKG" || warn "$MICROCODE_PKG unavailable — skipping"
-fi
-
-# ── Touchpad (tap to click) ───────────────────────────────────────────────────
-
-info "Configuring touchpad..."
-apt-get install -y xserver-xorg-input-libinput
-mkdir -p /etc/X11/xorg.conf.d
-cp "$SCRIPT_DIR/configs/xorg/40-touchpad.conf" /etc/X11/xorg.conf.d/40-touchpad.conf
-ok "Tap to click enabled"
-
-# ── Services ──────────────────────────────────────────────────────────────────
-
-systemctl enable bluetooth NetworkManager
-
-if grep -q "allow-hotplug\|^auto " /etc/network/interfaces 2>/dev/null; then
-    cp /etc/network/interfaces /etc/network/interfaces.bak
-    cat > /etc/network/interfaces <<'EOF'
-# Managed by NetworkManager
-source /etc/network/interfaces.d/*
-
-auto lo
-iface lo inet loopback
+# Create sway session for LightDM
+mkdir -p /usr/share/wayland-sessions
+cat > /usr/share/wayland-sessions/sway.desktop <<'EOF'
+[Desktop Entry]
+Name=Sway
+Comment=An i3-compatible Wayland compositor
+Exec=sway
+Type=Application
 EOF
+
+# ── Microsoft Fonts ───────────────────────────────────────────────────────────
+info "Installing Microsoft core fonts..."
+(
+    tmpdir=$(mktemp -d)
+    cd "$tmpdir"
+    wget -q "https://downloads.sourceforge.net/corefonts/arial32.exe" \
+         "https://downloads.sourceforge.net/corefonts/times32.exe" \
+         "https://downloads.sourceforge.net/corefonts/courie32.exe" 2>/dev/null || true
+    for f in *.exe; do
+        [ -f "$f" ] && cabextract --lowercase --directory=/usr/share/fonts/truetype/msttcorefonts "$f" 2>/dev/null || true
+    done
+    fc-cache -f 2>/dev/null || true
+    rm -rf "$tmpdir"
+) || warn "MS fonts install failed (non-fatal)"
+
+# ── Nerd Fonts via install-fonts.sh ──────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/install-fonts.sh" ]; then
+    info "Running install-fonts.sh..."
+    bash "$SCRIPT_DIR/install-fonts.sh" || warn "install-fonts.sh had errors"
 fi
 
-# ── Groups ────────────────────────────────────────────────────────────────────
+# ── Enable services ───────────────────────────────────────────────────────────
+info "Enabling services..."
+systemctl enable lightdm 2>/dev/null || warn "lightdm enable failed"
+systemctl enable NetworkManager 2>/dev/null || warn "NetworkManager enable failed"
+systemctl enable bluetooth 2>/dev/null || warn "bluetooth enable failed"
+systemctl enable libvirtd 2>/dev/null || warn "libvirtd enable failed"
 
-REAL_USER="${SUDO_USER:-$(logname 2>/dev/null || true)}"
-if [[ -n "$REAL_USER" ]]; then
-    usermod -aG libvirt,libvirt-qemu,kvm,video,audio,plugdev,netdev "$REAL_USER" || true
-    ok "Added $REAL_USER to required groups"
+# Add user to groups
+if [ -n "${SUDO_USER:-}" ]; then
+    info "Adding $SUDO_USER to groups..."
+    for grp in libvirt libvirt-qemu kvm input video audio plugdev bluetooth; do
+        usermod -aG "$grp" "$SUDO_USER" 2>/dev/null || true
+    done
 fi
 
-# ── Dotfiles ──────────────────────────────────────────────────────────────────
-
-if [[ -n "$REAL_USER" ]]; then
-    info "Installing dotfiles for $REAL_USER..."
-    USER_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
-    bash "$SCRIPT_DIR/setup-symlinks.sh" "$REAL_USER" "$USER_HOME"
-fi
-
-ok "Installation complete on Debian $DEBIAN_VER ($CODENAME). Reboot and log in via LightDM."
-echo ""
-echo "  Post-reboot:"
-echo "  - Set wallpaper: nitrogen ~/.config/wallpapers"
-echo "  - Save monitor layout: autorandr --detect"
-echo "  - Weather in polybar: wttr.in Louisville KY"
+info "Done! Log saved to $LOGFILE"
+info "Reboot and select Sway from the LightDM session menu."

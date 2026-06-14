@@ -1,0 +1,31 @@
+# Mako notification config — Catppuccin Mocha
+
+sort=-time
+layer=overlay
+background-color=#1e1e2e
+width=340
+height=200
+margin=8
+padding=12
+border-size=2
+border-color=#cba6f7
+border-radius=8
+text-color=#cdd6f4
+max-visible=5
+default-timeout=5000
+ignore-timeout=0
+
+font=JetBrainsMono Nerd Font 11
+
+[urgency=low]
+border-color=#89b4fa
+default-timeout=3000
+
+[urgency=normal]
+border-color=#cba6f7
+default-timeout=5000
+
+[urgency=high]
+border-color=#f38ba8
+default-timeout=0
+background-color=#2a1a1e

@@ -1,126 +1,36 @@
-/* Rofi default config — Catppuccin Mocha */
-
 configuration {
-    modi:                "drun,run";
-    show-icons:          true;
-    icon-theme:          "hicolor";
-    drun-display-format: "{name}";
-    display-drun:        " Apps";
-    display-run:         " Run";
-    terminal:            "kitty";
-    kb-cancel:           "Escape";
-    font:                "monospace 11";
-    highlight:           none;
-    matching-negate-char: '!';
+    modi:                   "drun,run,window";
+    show-icons:             true;
+    icon-theme:             "Papirus-Dark";
+    terminal:               "kitty";
+    drun-display-format:    "{name}";
+    display-drun:           "  Apps";
+    display-run:            "  Run";
+    display-window:         "  Windows";
+    sidebar-mode:           false;
+    font:                   "JetBrainsMono Nerd Font Mono 11";
+    kb-cancel:              "Escape,Super+space";
 }
 
-* {
-    bg:          #1e1e2e;
-    bg-alt:      #313244;
-    fg:          #cdd6f4;
-    fg-dim:      #585b70;
-    accent:      #cba6f7;
-    selected-bg: #45475a;
-    selected-fg: #cdd6f4;
+@theme "catppuccin-mocha"
 
-    background-color: transparent;
-    text-color:       @fg;
-    border-color:     transparent;
+* {
+    width: 680px;
 }
 
 window {
-    background-color: @bg;
-    border:           2px solid;
-    border-color:     @accent;
-    border-radius:    12px;
-    width:            680px;
-    padding:          0;
-}
-
-mainbox {
-    background-color: transparent;
-    spacing:          0;
-    children:         [inputbar, listview];
-    border-radius:    12px;
+    border-radius: 12px;
 }
 
 inputbar {
-    background-color: @bg-alt;
-    border-radius:    10px 10px 0 0;
-    padding:          12px 16px;
-    spacing:          10px;
-    children:         [prompt, entry];
-}
-
-prompt {
-    background-color: transparent;
-    text-color:       @accent;
-}
-
-entry {
-    background-color: transparent;
-    text-color:       @fg;
-    placeholder:      "Search...";
-    placeholder-color: @fg-dim;
+    border-radius: 10px;
 }
 
 listview {
-    background-color: @bg;
-    border-radius:    0 0 10px 10px;
-    padding:          6px 4px;
-    lines:            9;
-    scrollbar:        false;
-    spacing:          2px;
+    border-radius: 10px;
 }
 
-element {
-    background-color: transparent;
-    border-radius:    8px;
-    padding:          8px 14px;
-    spacing:          12px;
-    children:         [element-icon, element-text];
-    cursor:           pointer;
-}
-
-element-icon {
-    background-color: transparent;
-    size:             24px;
-}
-
-element-text {
-    background-color:            transparent;
-    text-color:                  @fg;
-    vertical-align:              0.5;
-    highlight:                   none;
-    text-transform:              none;
-}
-
-element-text.selected {
-    text-color: @selected-fg;
-    highlight:  none;
-}
-
-element-text.urgent {
-    highlight: none;
-}
-
-element-text.active {
-    highlight: none;
-}
-
-element.selected.normal {
-    background-color: @selected-bg;
-}
-
-element.selected.normal element-text {
-    text-color:  @selected-fg;
-    highlight:   none;
-}
-
-element.urgent element-text {
-    text-color: #f38ba8;
-}
-
-element.active element-text {
-    text-color: @accent;
+element selected {
+    background-color: @selected;
+    text-color:       @on-selected;
 }

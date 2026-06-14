@@ -1,0 +1,227 @@
+# Sway config — Catppuccin Mocha
+# vim: filetype=i3config
+
+set $mod Mod4
+set $left h
+set $down j
+set $up k
+set $right l
+
+set $term kitty
+set $menu rofi -show drun -show-icons
+set $browser firefox
+set $files thunar
+set $locker swaylock -f -c 1e1e2e
+
+# ── Output ────────────────────────────────────────────────────────────────────
+output * bg ~/.config/wallpapers/wallpaper.jpg fill
+# Fallback solid color if wallpaper missing
+# output * bg #1e1e2e solid_color
+
+# ── Input ─────────────────────────────────────────────────────────────────────
+input "type:touchpad" {
+    tap enabled
+    natural_scroll enabled
+    scroll_method two_finger
+    dwt enabled
+    middle_emulation enabled
+}
+
+input "type:keyboard" {
+    xkb_options caps:escape
+}
+
+# ── Gaps & borders ────────────────────────────────────────────────────────────
+gaps inner 8
+gaps outer 4
+default_border pixel 2
+default_floating_border pixel 2
+smart_gaps on
+smart_borders on
+
+# Catppuccin Mocha colors
+# class                 border    bg        text      indicator child_border
+client.focused          #cba6f7   #313244   #cdd6f4   #f5c2e7   #cba6f7
+client.focused_inactive #313244   #1e1e2e   #cdd6f4   #313244   #313244
+client.unfocused        #313244   #1e1e2e   #6c7086   #313244   #313244
+client.urgent           #f38ba8   #f38ba8   #1e1e2e   #f38ba8   #f38ba8
+
+# ── Autostart ─────────────────────────────────────────────────────────────────
+exec gammastep -l 38.25:-85.76 -t 6500:3000
+exec mako
+exec nm-applet --indicator
+exec /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+exec gnome-keyring-daemon --start --components=secrets,pkcs11
+exec waybar
+exec swaybg -i ~/.config/wallpapers/wallpaper.jpg -m fill || swaybg -c 1e1e2e
+
+exec swayidle -w \
+    timeout 600  "$locker" \
+    timeout 660  'swaymsg "output * dpms off"' \
+    resume       'swaymsg "output * dpms on"' \
+    before-sleep "$locker"
+
+# ── Key bindings ──────────────────────────────────────────────────────────────
+
+# Terminal
+bindsym $mod+Return       exec $term
+bindsym $mod+Shift+Return exec foot
+
+# Launcher
+bindsym $mod+space exec $menu
+
+# Browser / Files
+bindsym $mod+b exec $browser
+bindsym $mod+e exec $files
+
+# Kill window
+bindsym $mod+q kill
+
+# Lock
+bindsym $mod+Shift+l exec $locker
+
+# Fullscreen
+bindsym $mod+f fullscreen toggle
+
+# Float toggle
+bindsym $mod+Shift+f floating toggle
+
+# Reload config
+bindsym $mod+Shift+r reload
+
+# Random wallpaper
+bindsym $mod+Shift+w exec "find ~/.config/wallpapers -type f \( -iname '*.jpg' -o -iname '*.png' \) | shuf -n1 | xargs -I{} swaymsg output '*' bg '{}' fill"
+
+# Screenshots
+bindsym Print            exec grim ~/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png
+bindsym $mod+Print       exec grim -g "$(slurp)" ~/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png
+bindsym $mod+Shift+Print exec grim -g "$(slurp)" - | wl-copy
+
+# Power menu (rofi script)
+bindsym $mod+x exec ~/.config/rofi/scripts/powermenu.sh
+
+# Focus movement
+bindsym $mod+$left  focus left
+bindsym $mod+$down  focus down
+bindsym $mod+$up    focus up
+bindsym $mod+$right focus right
+bindsym $mod+Left   focus left
+bindsym $mod+Down   focus down
+bindsym $mod+Up     focus up
+bindsym $mod+Right  focus right
+
+# Move window
+bindsym $mod+Shift+$left  move left
+bindsym $mod+Shift+$down  move down
+bindsym $mod+Shift+$up    move up
+bindsym $mod+Shift+$right move right
+bindsym $mod+Shift+Left   move left
+bindsym $mod+Shift+Down   move down
+bindsym $mod+Shift+Up     move up
+bindsym $mod+Shift+Right  move right
+
+# Layout
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+t layout toggle split
+bindsym $mod+v split vertical
+bindsym $mod+c split horizontal
+
+# Scratchpad
+bindsym $mod+Shift+minus move scratchpad
+bindsym $mod+minus       scratchpad show
+
+# Resize mode
+mode "resize" {
+    bindsym $left  resize shrink width  10px
+    bindsym $right resize grow   width  10px
+    bindsym $up    resize shrink height 10px
+    bindsym $down  resize grow   height 10px
+    bindsym Left   resize shrink width  10px
+    bindsym Right  resize grow   width  10px
+    bindsym Up     resize shrink height 10px
+    bindsym Down   resize grow   height 10px
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+# Workspaces
+set $ws1  "1"
+set $ws2  "2"
+set $ws3  "3"
+set $ws4  "4"
+set $ws5  "5"
+set $ws6  "6"
+set $ws7  "7"
+set $ws8  "8"
+set $ws9  "9"
+set $ws10 "10"
+
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+bindsym $mod+8 workspace $ws8
+bindsym $mod+9 workspace $ws9
+bindsym $mod+0 workspace $ws10
+
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7
+bindsym $mod+Shift+8 move container to workspace $ws8
+bindsym $mod+Shift+9 move container to workspace $ws9
+bindsym $mod+Shift+0 move container to workspace $ws10
+
+# Volume
+bindsym XF86AudioRaiseVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ && pkill -RTMIN+8 waybar
+bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- && pkill -RTMIN+8 waybar
+bindsym XF86AudioMute        exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && pkill -RTMIN+8 waybar
+bindsym XF86AudioMicMute     exec wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
+
+# Brightness
+bindsym XF86MonBrightnessUp   exec brightnessctl set 5%+
+bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
+
+# Media
+bindsym XF86AudioPlay  exec playerctl play-pause
+bindsym XF86AudioNext  exec playerctl next
+bindsym XF86AudioPrev  exec playerctl previous
+
+# ── Window rules ──────────────────────────────────────────────────────────────
+
+# Workspace assignments
+assign [app_id="firefox"]          $ws2
+assign [app_id="thunderbird"]      $ws3
+assign [app_id="thunar"]           $ws4
+assign [app_id="libreoffice.*"]    $ws5
+assign [app_id="virt-manager"]     $ws9
+
+# Floating windows
+for_window [app_id="pavucontrol"]  floating enable
+for_window [app_id="seahorse"]     floating enable
+for_window [app_id="blueman-manager"] floating enable
+for_window [app_id="lxappearance"] floating enable
+for_window [app_id="qt5ct"]        floating enable
+for_window [app_id="qt6ct"]        floating enable
+for_window [app_id="yad"]          floating enable
+for_window [title="(?i).*calculator.*"] floating enable
+
+# Picture-in-picture
+for_window [title="Picture-in-Picture"] floating enable, sticky enable
+
+# XWayland fallbacks
+for_window [class="Pavucontrol"] floating enable
+for_window [class="Blueman-manager"] floating enable
+for_window [class="Lxappearance"] floating enable
+
+# ── Include ───────────────────────────────────────────────────────────────────
+include /etc/sway/config.d/*
+include ~/.config/sway/conf.d/*

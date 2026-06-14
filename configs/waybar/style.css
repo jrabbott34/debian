@@ -1,0 +1,174 @@
+/* Waybar style — Catppuccin Mocha */
+
+@define-color base   #1e1e2e;
+@define-color mantle #181825;
+@define-color crust  #11111b;
+@define-color surface0 #313244;
+@define-color surface1 #45475a;
+@define-color text   #cdd6f4;
+@define-color subtext0 #a6adc8;
+@define-color subtext1 #bac2de;
+@define-color mauve  #cba6f7;
+@define-color blue   #89b4fa;
+@define-color green  #a6e3a1;
+@define-color yellow #f9e2af;
+@define-color red    #f38ba8;
+@define-color peach  #fab387;
+@define-color teal   #94e2d5;
+
+* {
+    font-family: "JetBrainsMono Nerd Font", "Noto Sans", sans-serif;
+    font-size: 13px;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+}
+
+window#waybar {
+    background-color: rgba(30, 30, 46, 0.85);
+    color: @text;
+    transition-property: background-color;
+    transition-duration: 0.5s;
+}
+
+window#waybar.hidden {
+    opacity: 0.2;
+}
+
+/* Module pill wrapper */
+.modules-left,
+.modules-center,
+.modules-right {
+    margin: 4px 0;
+}
+
+/* Base module pill */
+#workspaces,
+#mode,
+#clock,
+#custom-weather,
+#network,
+#cpu,
+#memory,
+#pulseaudio,
+#idle_inhibitor,
+#tray {
+    background-color: @surface0;
+    color: @text;
+    padding: 0 12px;
+    margin: 0 3px;
+    border-radius: 12px;
+}
+
+/* Workspaces */
+#workspaces button {
+    padding: 0 6px;
+    background-color: transparent;
+    color: @subtext0;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+#workspaces button:hover {
+    background-color: @surface1;
+    color: @text;
+    box-shadow: none;
+}
+
+#workspaces button.focused,
+#workspaces button.active {
+    background-color: @mauve;
+    color: @base;
+    font-weight: bold;
+}
+
+#workspaces button.urgent {
+    background-color: @red;
+    color: @base;
+}
+
+/* Clock */
+#clock {
+    color: @blue;
+    font-weight: bold;
+}
+
+/* Weather */
+#custom-weather {
+    color: @yellow;
+}
+
+/* Network */
+#network {
+    color: @teal;
+}
+
+#network.disconnected {
+    color: @red;
+}
+
+/* CPU */
+#cpu {
+    color: @blue;
+}
+
+#cpu.warning {
+    color: @yellow;
+}
+
+#cpu.critical {
+    color: @red;
+}
+
+/* Memory */
+#memory {
+    color: @mauve;
+}
+
+#memory.warning {
+    color: @yellow;
+}
+
+#memory.critical {
+    color: @red;
+}
+
+/* PulseAudio */
+#pulseaudio {
+    color: @green;
+}
+
+#pulseaudio.muted {
+    color: @red;
+}
+
+/* Idle inhibitor */
+#idle_inhibitor {
+    color: @subtext0;
+}
+
+#idle_inhibitor.activated {
+    color: @peach;
+}
+
+/* Tray */
+#tray {
+    padding: 0 8px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: @red;
+    border-radius: 12px;
+}
+
+/* Mode */
+#mode {
+    background-color: @peach;
+    color: @base;
+    font-weight: bold;
+}

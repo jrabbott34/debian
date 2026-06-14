@@ -1,76 +1,89 @@
 #!/usr/bin/env bash
-# Install dotfiles by symlinking configs into user's home
+# Setup symlinks for Sway/Wayland dotfiles
+
 set -euo pipefail
 
-REAL_USER="${1:-${SUDO_USER:-$(logname 2>/dev/null)}}"
-USER_HOME="${2:-$(getent passwd "$REAL_USER" | cut -d: -f6)}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIGS="$SCRIPT_DIR/configs"
-
-as_user() { sudo -u "$REAL_USER" "$@"; }
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+info() { echo -e "${GREEN}[INFO]${NC}  $*"; }
+warn() { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 
 link() {
     local src="$1" dst="$2"
     mkdir -p "$(dirname "$dst")"
-    if [[ -e "$dst" && ! -L "$dst" ]]; then
-        mv "$dst" "${dst}.bak"
-        echo "  backed up: ${dst}.bak"
+    if [ -e "$dst" ] && [ ! -L "$dst" ]; then
+        warn "Backing up existing $dst → $dst.bak"
+        mv "$dst" "$dst.bak"
     fi
-    ln -sf "$src" "$dst"
-    chown -h "$REAL_USER:$REAL_USER" "$dst"
-    echo "  linked: $dst -> $src"
+    ln -sfn "$src" "$dst"
+    info "Linked $dst → $src"
 }
 
-append_once() {
-    local snippet="$1" target="$2" marker="$3"
-    if ! grep -qF "$marker" "$target" 2>/dev/null; then
-        echo "" >> "$target"
-        echo "$marker" >> "$target"
-        cat "$snippet" >> "$target"
-        chown "$REAL_USER:$REAL_USER" "$target"
-        echo "  appended: $target"
+# ── Create standard directories ───────────────────────────────────────────────
+info "Creating standard directories..."
+mkdir -p ~/Documents ~/Downloads ~/Music ~/Pictures ~/Pictures/Screenshots ~/git
+mkdir -p ~/.config/wallpapers
+
+# ── Config symlinks ───────────────────────────────────────────────────────────
+info "Linking configs..."
+link "$REPO_DIR/configs/sway"       ~/.config/sway
+link "$REPO_DIR/configs/waybar"     ~/.config/waybar
+link "$REPO_DIR/configs/rofi"       ~/.config/rofi
+link "$REPO_DIR/configs/mako"       ~/.config/mako
+link "$REPO_DIR/configs/fastfetch"  ~/.config/fastfetch
+link "$REPO_DIR/configs/alacritty"  ~/.config/alacritty
+link "$REPO_DIR/configs/shell"      ~/.config/shell
+
+# Fish aliases
+if [ -d "$REPO_DIR/configs/shell" ]; then
+    FISH_CONF_DIR=~/.config/fish/conf.d
+    mkdir -p "$FISH_CONF_DIR"
+    if [ -f "$REPO_DIR/configs/shell/fish_aliases" ]; then
+        link "$REPO_DIR/configs/shell/fish_aliases" "$FISH_CONF_DIR/aliases.fish"
+    fi
+fi
+
+# ── Shell RC appends ──────────────────────────────────────────────────────────
+info "Appending shell configs..."
+
+BASHRC_APPEND="$REPO_DIR/configs/shell/bashrc_append"
+if [ -f "$BASHRC_APPEND" ]; then
+    MARKER="# debian-dotfiles bashrc"
+    if ! grep -qF "$MARKER" ~/.bashrc 2>/dev/null; then
+        echo -e "\n$MARKER" >> ~/.bashrc
+        cat "$BASHRC_APPEND" >> ~/.bashrc
+        info "Appended to ~/.bashrc"
     else
-        echo "  already present: $target"
+        info "~/.bashrc already has dotfiles block, skipping"
     fi
-}
+fi
 
-# ── XDG config dirs ───────────────────────────────────────────────────────────
-link "$CONFIGS/i3"              "$USER_HOME/.config/i3"
-chmod +x "$CONFIGS/i3/scripts/idle-lock.sh" 2>/dev/null || true
-link "$CONFIGS/polybar"         "$USER_HOME/.config/polybar"
-link "$CONFIGS/rofi"            "$USER_HOME/.config/rofi"
-link "$CONFIGS/dunst"           "$USER_HOME/.config/dunst"
-link "$CONFIGS/alacritty"       "$USER_HOME/.config/alacritty"
-link "$CONFIGS/picom"           "$USER_HOME/.config/picom"
-link "$CONFIGS/fastfetch"       "$USER_HOME/.config/fastfetch"
-link "$CONFIGS/shell"           "$USER_HOME/.config/shell"
+ZSHRC_APPEND="$REPO_DIR/configs/shell/zshrc_append"
+if [ -f "$ZSHRC_APPEND" ]; then
+    MARKER="# debian-dotfiles zshrc"
+    if ! grep -qF "$MARKER" ~/.zshrc 2>/dev/null; then
+        echo -e "\n$MARKER" >> ~/.zshrc
+        cat "$ZSHRC_APPEND" >> ~/.zshrc
+        info "Appended to ~/.zshrc"
+    else
+        info "~/.zshrc already has dotfiles block, skipping"
+    fi
+fi
 
-# ── Fish conf.d ───────────────────────────────────────────────────────────────
-as_user mkdir -p "$USER_HOME/.config/fish/conf.d"
-link "$CONFIGS/shell/fish_aliases.fish" "$USER_HOME/.config/fish/conf.d/aliases.fish"
+# ── Nerd Fonts ────────────────────────────────────────────────────────────────
+if [ -f "$REPO_DIR/install-fonts.sh" ]; then
+    info "Running install-fonts.sh..."
+    bash "$REPO_DIR/install-fonts.sh" || warn "install-fonts.sh had errors"
+fi
 
-# ── Bash ──────────────────────────────────────────────────────────────────────
-touch "$USER_HOME/.bashrc"
-append_once "$CONFIGS/shell/bashrc_append.sh" \
-    "$USER_HOME/.bashrc" \
-    "# >>> debian dotfiles >>>"
+# ── X11 touchpad fallback ─────────────────────────────────────────────────────
+TOUCHPAD_CONF="$REPO_DIR/configs/xorg/40-touchpad.conf"
+if [ -f "$TOUCHPAD_CONF" ]; then
+    sudo mkdir -p /etc/X11/xorg.conf.d/
+    sudo cp "$TOUCHPAD_CONF" /etc/X11/xorg.conf.d/40-touchpad.conf
+    info "Copied touchpad config to /etc/X11/xorg.conf.d/"
+fi
 
-# ── Zsh ───────────────────────────────────────────────────────────────────────
-touch "$USER_HOME/.zshrc"
-append_once "$CONFIGS/shell/zshrc_append.sh" \
-    "$USER_HOME/.zshrc" \
-    "# >>> debian dotfiles >>>"
-
-# ── Autostart PipeWire ────────────────────────────────────────────────────────
-as_user systemctl --user enable pipewire pipewire-pulse wireplumber 2>/dev/null || true
-
-# ── Home directories ──────────────────────────────────────────────────────────
-for dir in Documents Downloads Music Pictures Pictures/Screenshots git; do
-    as_user mkdir -p "$USER_HOME/$dir"
-    echo "  created: $USER_HOME/$dir"
-done
-
-# ── Wallpapers dir ────────────────────────────────────────────────────────────
-as_user mkdir -p "$USER_HOME/.config/wallpapers"
-
-echo "Dotfiles linked for $REAL_USER."
+info "All symlinks created!"
+info "Wallpapers: drop images in ~/.config/wallpapers/"
+info "Reboot or log into a Sway session to apply."
