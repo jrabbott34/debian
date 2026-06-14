@@ -10,7 +10,7 @@ configuration {
     display-run:         "  Run";
     terminal:            "kitty";
     kb-cancel:           "Escape";
-    font:                "FiraCode Nerd Font Mono 11";
+    font:                "monospace 11";
 }
 
 * {
