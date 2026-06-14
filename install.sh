@@ -138,6 +138,7 @@ apt-get install -y \
 info "Installing system utilities..."
 apt-get install -y \
     nala fastfetch htop btop \
+    eza bat ripgrep fd-find \
     brightnessctl \
     gnome-keyring libsecret-tools seahorse \
     || warn "Some utilities failed"
