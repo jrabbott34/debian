@@ -59,7 +59,8 @@
         "tooltip-format-ethernet": "{ifname}\n{ipaddr}",
         "tooltip-format-disconnected": "Disconnected",
         "interval": 2,
-        "on-click": "nm-connection-editor"
+        "on-click": "nm-connection-editor",
+        "on-click-right": "kitty --title=nmtui --class=nmtui -e nmtui"
     },
 
     "cpu": {

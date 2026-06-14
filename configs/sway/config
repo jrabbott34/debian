@@ -206,6 +206,7 @@ for_window [app_id="blueman-manager"] floating enable
 for_window [app_id="lxappearance"] floating enable
 for_window [app_id="qt5ct"]        floating enable
 for_window [app_id="qt6ct"]        floating enable
+for_window [app_id="nmtui"]        floating enable, resize set 600 400
 for_window [app_id="yad"]          floating enable
 for_window [title="(?i).*calculator.*"] floating enable
 

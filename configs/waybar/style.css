@@ -51,6 +51,7 @@ window#waybar.hidden {
 #cpu,
 #memory,
 #pulseaudio,
+#battery,
 #idle_inhibitor,
 #tray {
     background-color: @surface0;
