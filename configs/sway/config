@@ -51,7 +51,7 @@ exec nm-applet --indicator
 exec /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
 exec gnome-keyring-daemon --start --components=secrets,pkcs11
 exec waybar
-exec ~/.config/sway/scripts/bg.sh
+exec_always ~/.config/sway/scripts/bg.sh
 
 exec swayidle -w \
     timeout 600  "$locker" \
