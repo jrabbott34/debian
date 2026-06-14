@@ -91,6 +91,9 @@ bindsym $mod+f fullscreen toggle
 # Float toggle
 bindsym $mod+Shift+f floating toggle
 
+# Mod+left-click drag to move, Mod+right-click drag to resize
+floating_modifier $mod normal
+
 # Reload config
 bindsym $mod+Shift+r reload
 
