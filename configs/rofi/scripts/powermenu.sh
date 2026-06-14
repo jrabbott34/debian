@@ -7,7 +7,7 @@ chosen=$(printf "󰌾  Lock\n󰍃  Logout\n⏾  Suspend\n󰜉  Reboot\n󰐥  Shu
            -i \
            -no-fixed-num-lines \
            -width 20 \
-           -show-icons false \
+           -theme-str 'configuration { show-icons: false; }' \
            2>/dev/null)
 
 case "$chosen" in
