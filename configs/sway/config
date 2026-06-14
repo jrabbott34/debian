@@ -94,6 +94,9 @@ bindsym $mod+Shift+f floating toggle
 # Reload config
 bindsym $mod+Shift+r reload
 
+# Toggle waybar
+bindsym $mod+Shift+b exec pkill -SIGUSR1 waybar
+
 # Random wallpaper
 bindsym $mod+Shift+w exec ~/.config/sway/scripts/bg.sh --random
 
