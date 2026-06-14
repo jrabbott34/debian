@@ -23,11 +23,7 @@ info "Detected Debian: $CODENAME"
 
 # ── Clean sources.list ────────────────────────────────────────────────────────
 info "Writing sources.list..."
-if [ "$CODENAME" = "trixie" ] || [ "$CODENAME" = "sid" ]; then
-    SECURITY_SUITE="${CODENAME}-security"
-else
-    SECURITY_SUITE="${CODENAME}-security"
-fi
+SECURITY_SUITE="${CODENAME}-security"
 
 cat > /etc/apt/sources.list <<EOF
 deb http://deb.debian.org/debian $CODENAME main contrib non-free non-free-firmware
@@ -139,6 +135,7 @@ info "Installing system utilities..."
 apt-get install -y \
     nala fastfetch htop btop \
     eza bat ripgrep fd-find \
+    vim \
     brightnessctl \
     gnome-keyring libsecret-tools seahorse \
     || warn "Some utilities failed"
@@ -229,6 +226,13 @@ fi
 # ── Starship prompt ───────────────────────────────────────────────────────────
 info "Installing Starship prompt..."
 curl -fsSL https://starship.rs/install.sh | sh -s -- --yes || warn "Starship install failed"
+
+# ── Symlinks ──────────────────────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -n "${SUDO_USER:-}" ] && [ -f "$SCRIPT_DIR/setup-symlinks.sh" ]; then
+    info "Running setup-symlinks.sh as $SUDO_USER..."
+    sudo -u "$SUDO_USER" bash "$SCRIPT_DIR/setup-symlinks.sh" || warn "setup-symlinks.sh had errors"
+fi
 
 info "Done! Log saved to $LOGFILE"
 info "Reboot and select Sway from the LightDM session menu."

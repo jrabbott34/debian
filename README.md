@@ -1,106 +1,105 @@
-# debian
+# debian-sway
 
-Debian 12 (Bookworm) and Debian 13 (Trixie) daily-driver build — i3 + X11
+Debian 12 (Bookworm) and Debian 13 (Trixie) daily-driver build — Sway + Wayland
+
+Catppuccin Mocha theme throughout. Pill-style Waybar. No GNOME dependencies.
 
 ## Stack
 
 | Layer | Choice |
 |---|---|
-| WM | i3-wm |
-| Bar | Polybar |
-| Launcher | Rofi |
-| Compositor | Picom (glx) |
-| Terminal | Alacritty |
-| Notifications | Dunst |
+| Compositor | Sway (Wayland, i3-compatible) |
+| Bar | Waybar |
+| Launcher | Rofi (Wayland) |
+| Terminal | Kitty |
+| Notifications | Mako |
 | Display manager | LightDM |
-| Audio | PipeWire + PulseAudio compat |
-| Wallpaper | Nitrogen |
+| Audio | PipeWire + WirePlumber |
+| Wallpaper | swaybg |
 | File manager | Thunar |
+| Shell | Zsh + Starship prompt |
+| Lock screen | Swaylock |
 
-## Polybar modules (left → right)
+## Waybar modules
 
-- **Left** — i3 workspace numbers
-- **Center** — clock/date; click opens `yad` calendar popup
-- **Right** — weather (Louisville, KY) · CPU · RAM · volume · idle inhibitor · system tray
+- **Left** — Sway workspace numbers
+- **Center** — clock/date; hover for calendar
+- **Right** — weather (Louisville, KY; hover for forecast) · network · CPU · RAM · volume · battery · idle inhibitor · tray
+
+## Key bindings (Super = Win key)
+
+| Binding | Action |
+|---|---|
+| `Super+Return` | Terminal (Kitty) |
+| `Super+Space` | App launcher (Rofi) |
+| `Super+x` | Power menu |
+| `Super+Shift+e` | Lock screen |
+| `Super+q` | Close window |
+| `Super+f` | Fullscreen |
+| `Super+Shift+f` | Toggle floating |
+| `Super+b` | Firefox (workspace 2) |
+| `Super+e` | Thunar (workspace 4) |
+| `Super+Shift+w` | Random wallpaper |
+| `Super+Shift+r` | Reload Sway config |
+| `Super+r` | Resize mode |
+| `Super+1–0` | Switch workspace |
+| `Super+Shift+1–0` | Move window to workspace |
+| `Print` | Screenshot (full) |
+| `Super+Print` | Screenshot (region) |
+| `Super+Shift+Print` | Screenshot to clipboard |
+| 3-finger swipe | Switch workspace |
 
 ## Shell aliases
-
-Available in bash, zsh, and fish after install:
 
 | Alias | Command |
 |---|---|
 | `c` | `clear` |
-| `update` | `sudo nala update && sudo nala upgrade` |
+| `update` | `sudo nala update && upgrade` |
 | `install` | `sudo nala install` |
 | `speedtest` | `speedtest-cli --simple` |
-| `i3config` | `gedit ~/.config/i3/config` |
-| `polyconfig` | `gedit ~/.config/polybar/config.ini` |
+| `swayconfig` | `vim ~/.config/sway/config` |
+| `waybarconfig` | `vim ~/.config/waybar/config.jsonc` |
 | `ff` | `fastfetch` |
 | `ls` / `ll` / `lt` | `eza` with icons |
 | `cat` | `bat --style=plain` |
 
 ## Install
 
+Start from a minimal Debian install (no desktop environment selected in tasksel).
+
 ```bash
+sudo apt install git -y
+git clone https://github.com/jrabbott34/debian ~/git/debian
+cd ~/git/debian
 sudo bash install.sh
 ```
 
-Reboot, then log in via LightDM and choose the i3 session.
-
-### Post-reboot
-
-```bash
-# Save current monitor layout
-autorandr --detect --force
-
-# Set wallpaper
-nitrogen ~/.config/wallpapers
-
-# Set GTK theme
-lxappearance
-
-# Set Qt theme
-qt5ct && qt6ct
-```
+Reboot, select **Sway** from the LightDM session menu, log in.
 
 ## Layout
 
 ```
 configs/
-├── i3/           # i3 keybindings, autostart, window rules
-├── polybar/
-│   ├── config.ini
-│   ├── launch.sh
+├── sway/
+│   ├── config                  # keybinds, window rules, input, autostart
 │   └── scripts/
-│       ├── weather.sh          # wttr.in Louisville KY
-│       ├── calendar-popup.sh   # yad calendar toggle
-│       └── idle-inhibitor.sh   # xdotool-based inhibitor
+│       ├── bg.sh               # swaybg wallpaper (--random flag)
+│       └── workspace-nav.sh    # swipe to empty workspaces
+├── waybar/
+│   ├── config.jsonc
+│   ├── style.css               # Catppuccin Mocha pills
+│   └── scripts/
+│       ├── weather.sh          # wttr.in Louisville KY (JSON + tooltip)
+│       └── calendar-popup.sh   # yad calendar toggle
 ├── rofi/
-│   ├── launcher.rasi
-│   ├── powermenu.rasi
-│   ├── powermenu.sh
-│   └── nord.rasi               # shared Nord palette
-├── dunst/dunstrc
-├── alacritty/alacritty.toml
-└── picom/picom.conf
+│   ├── config.rasi
+│   ├── catppuccin-mocha.rasi
+│   └── scripts/powermenu.sh
+├── kitty/kitty.conf
+├── swaylock/config
+├── mako/config
+├── starship/starship.toml
+└── shell/
+    ├── aliases.sh
+    └── zshrc
 ```
-
-## Key bindings (Super = Win key)
-
-| Binding | Action |
-|---|---|
-| `Super+Return` | Terminal (Alacritty) |
-| `Super+space` | App launcher (Rofi) |
-| `Super+x` | Power menu (lock/logout/suspend/reboot/shutdown) |
-| `Super+l` | Lock screen |
-| `Super+q` | Close window |
-| `Super+f` | Fullscreen |
-| `Super+b` | Firefox |
-| `Super+e` | Thunar |
-| `Super+Shift+w` | Random wallpaper (nitrogen) |
-| `Print` | Screenshot (full) |
-| `Super+Print` | Screenshot (region, Flameshot) |
-| `Super+r` | Resize mode |
-| `Super+Shift+r` | Reload i3 config |
-| `Super+1–0` | Switch workspace |
-| `Super+Shift+1–0` | Move window to workspace |
