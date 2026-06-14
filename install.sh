@@ -225,5 +225,9 @@ if [ -n "${SUDO_USER:-}" ]; then
     done
 fi
 
+# ── Starship prompt ───────────────────────────────────────────────────────────
+info "Installing Starship prompt..."
+curl -fsSL https://starship.rs/install.sh | sh -s -- --yes || warn "Starship install failed"
+
 info "Done! Log saved to $LOGFILE"
 info "Reboot and select Sway from the LightDM session menu."

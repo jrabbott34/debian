@@ -31,6 +31,7 @@ link "$REPO_DIR/configs/waybar"     ~/.config/waybar
 link "$REPO_DIR/configs/rofi"       ~/.config/rofi
 link "$REPO_DIR/configs/mako"       ~/.config/mako
 link "$REPO_DIR/configs/kitty"      ~/.config/kitty
+link "$REPO_DIR/configs/starship"   ~/.config/starship
 link "$REPO_DIR/configs/swaylock"   ~/.config/swaylock
 link "$REPO_DIR/configs/fastfetch"  ~/.config/fastfetch
 link "$REPO_DIR/configs/alacritty"  ~/.config/alacritty

@@ -24,12 +24,8 @@ ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 # ── Aliases ───────────────────────────────────────────────────────────────────
 [ -f ~/.config/shell/aliases.sh ] && source ~/.config/shell/aliases.sh
 
-# ── Prompt (simple Catppuccin Mocha) ──────────────────────────────────────────
-autoload -Uz vcs_info
-precmd() { vcs_info }
-zstyle ':vcs_info:git:*' formats ' (%b)'
-setopt PROMPT_SUBST
-PROMPT='%F{#cba6f7}%n%f%F{#6c7086}@%f%F{#89b4fa}%m%f %F{#a6e3a1}%~%f%F{#f9e2af}${vcs_info_msg_0_}%f %F{#cba6f7}❯%f '
+# ── Prompt — Starship ─────────────────────────────────────────────────────────
+command -v starship &>/dev/null && eval "$(starship init zsh)"
 
 # ── Key bindings ──────────────────────────────────────────────────────────────
 bindkey '^[[A' history-search-backward
