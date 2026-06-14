@@ -80,7 +80,6 @@ fi
 info "Installing core Wayland/Sway packages..."
 apt-get install -y \
     sway swaylock swayidle swaybg \
-    waybar \
     rofi \
     mako-notifier \
     grim slurp \
@@ -94,6 +93,13 @@ apt-get install -y \
     xwayland \
     kitty xterm foot \
     || warn "Some Wayland packages failed — check log"
+
+# waybar is in backports on Bookworm
+if [ "$CODENAME" = "bookworm" ]; then
+    apt-get install -y -t bookworm-backports waybar || warn "waybar backport failed"
+else
+    apt-get install -y waybar || warn "waybar failed"
+fi
 
 info "Installing desktop apps..."
 apt-get install -y \
