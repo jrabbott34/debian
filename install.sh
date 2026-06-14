@@ -99,6 +99,7 @@ apt-get install -y \
     policykit-1-gnome \
     xwayland \
     kitty xterm foot \
+    zsh zsh-autosuggestions zsh-syntax-highlighting \
     || warn "Some Wayland packages failed — check log"
 
 # waybar is in backports on Bookworm

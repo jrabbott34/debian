@@ -18,9 +18,9 @@ alias speedtest='speedtest-cli --simple'
 alias ff='fastfetch'
 
 # ── Config shortcuts ──────────────────────────────────────────────────────────
-alias i3config='gedit $HOME/.config/i3/config &'
-alias polyconfig='gedit $HOME/.config/polybar/config.ini &'
-alias aliasrc='gedit $HOME/.config/shell/aliases.sh &'
+alias swayconfig='vim ~/.config/sway/config'
+alias waybarconfig='vim ~/.config/waybar/config.jsonc'
+alias aliasrc='vim ~/.config/shell/aliases.sh'
 
 # ── ls → eza ──────────────────────────────────────────────────────────────────
 alias ls='eza --icons --group-directories-first'

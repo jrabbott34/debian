@@ -86,6 +86,21 @@ if [ -f "$TOUCHPAD_CONF" ]; then
     info "Copied touchpad config to /etc/X11/xorg.conf.d/"
 fi
 
+# ── Zsh setup ────────────────────────────────────────────────────────────────
+info "Setting up zsh..."
+if [ -f "$REPO_DIR/configs/shell/zshrc" ]; then
+    if [ ! -f ~/.zshrc ] || ! grep -q "debian-dotfiles" ~/.zshrc 2>/dev/null; then
+        cp "$REPO_DIR/configs/shell/zshrc" ~/.zshrc
+        info "Installed ~/.zshrc"
+    else
+        info "~/.zshrc already configured, skipping"
+    fi
+fi
+if command -v zsh &>/dev/null && [ "$SHELL" != "$(command -v zsh)" ]; then
+    chsh -s "$(command -v zsh)"
+    info "Default shell set to zsh — takes effect on next login"
+fi
+
 # ── GTK dark theme ───────────────────────────────────────────────────────────
 info "Setting GTK dark theme via gsettings..."
 mkdir -p ~/.config/gtk-3.0 ~/.config/gtk-4.0
