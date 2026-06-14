@@ -204,6 +204,7 @@ for_window [app_id="pavucontrol"]  floating enable
 for_window [app_id="seahorse"]     floating enable
 for_window [app_id="blueman-manager"] floating enable
 for_window [app_id="lxappearance"] floating enable
+for_window [app_id="nwg-look"]     floating enable
 for_window [app_id="qt5ct"]        floating enable
 for_window [app_id="qt6ct"]        floating enable
 for_window [app_id="waybar"]       border none

@@ -113,7 +113,7 @@ apt-get install -y \
     xfce4-settings xfce4-notifyd xarchiver \
     mousepad gedit \
     yad \
-    lxappearance qt5ct \
+    nwg-look lxappearance qt5ct \
     || warn "Some desktop apps failed"
 
 info "Installing audio (PipeWire)..."
