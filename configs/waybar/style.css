@@ -25,12 +25,10 @@
 }
 
 window#waybar {
-    background-color: rgba(30, 30, 46, 0.85);
+    background-color: transparent;
     color: @text;
     border: none;
     box-shadow: none;
-    transition-property: background-color;
-    transition-duration: 0.5s;
 }
 
 window#waybar.hidden {
