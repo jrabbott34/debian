@@ -44,13 +44,6 @@ default_floating_border pixel 2
 smart_gaps on
 smart_borders on
 
-# SwayFX extras (ignored by standard sway, active if using swayfx)
-corner_radius 10
-blur enable
-blur_passes 2
-shadows enable
-shadow_blur_radius 20
-
 # Catppuccin Mocha colors
 # class                 border    bg        text      indicator child_border
 client.focused          #cba6f7   #313244   #cdd6f4   #f5c2e7   #cba6f7
