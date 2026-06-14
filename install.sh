@@ -14,7 +14,7 @@ need_root
 
 # ── Bootstrap tools ──────────────────────────────────────────────────────────
 info "Installing bootstrap tools..."
-apt-get update -qq
+apt-get update
 apt-get install -y curl wget git jq unzip ca-certificates gnupg cabextract apt-transport-https
 
 # ── Detect Debian version ─────────────────────────────────────────────────────
@@ -23,12 +23,18 @@ info "Detected Debian: $CODENAME"
 
 # ── Clean sources.list ────────────────────────────────────────────────────────
 info "Writing sources.list..."
+if [ "$CODENAME" = "trixie" ] || [ "$CODENAME" = "sid" ]; then
+    SECURITY_SUITE="${CODENAME}-security"
+else
+    SECURITY_SUITE="${CODENAME}-security"
+fi
+
 cat > /etc/apt/sources.list <<EOF
 deb http://deb.debian.org/debian $CODENAME main contrib non-free non-free-firmware
 deb-src http://deb.debian.org/debian $CODENAME main contrib non-free non-free-firmware
 
-deb http://security.debian.org/debian-security $CODENAME-security main contrib non-free non-free-firmware
-deb-src http://security.debian.org/debian-security $CODENAME-security main contrib non-free non-free-firmware
+deb http://security.debian.org/debian-security ${SECURITY_SUITE} main contrib non-free non-free-firmware
+deb-src http://security.debian.org/debian-security ${SECURITY_SUITE} main contrib non-free non-free-firmware
 
 deb http://deb.debian.org/debian $CODENAME-updates main contrib non-free non-free-firmware
 deb-src http://deb.debian.org/debian $CODENAME-updates main contrib non-free non-free-firmware
@@ -39,7 +45,7 @@ EOF
 # Remove cdrom entries if any
 sed -i '/^deb cdrom:/d' /etc/apt/sources.list
 
-apt-get update -qq
+apt-get update
 
 # ── Microcode ─────────────────────────────────────────────────────────────────
 info "Detecting CPU for microcode..."
@@ -69,7 +75,7 @@ Package: *
 Pin: origin packages.mozilla.org
 Pin-Priority: 1001
 PREF
-    apt-get update -qq
+    apt-get update
     apt-get install -y firefox && FIREFOX_OK=1 || warn "Mozilla repo Firefox failed, falling back"
 fi
 if [ "$FIREFOX_OK" -eq 0 ]; then
