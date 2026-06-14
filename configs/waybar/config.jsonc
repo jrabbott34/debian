@@ -23,6 +23,7 @@
         "memory",
         "pulseaudio",
         "battery",
+        "power-profiles-daemon",
         "idle_inhibitor",
         "tray"
     ],
@@ -111,6 +112,20 @@
         "format-full": "󰁹  Full",
         "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
         "tooltip-format": "{timeTo}\n{power}W"
+    },
+
+    "power-profiles-daemon": {
+        "format": "{icon}",
+        "tooltip-format": "{profile}\nDriver: {driver}",
+        "format-icons": {
+            "default": "󰾅",
+            "performance": "󰓅",
+            "balanced": "󰾅",
+            "power-saver": "󰌪"
+        },
+        "on-click": "powerprofilesctl set performance",
+        "on-click-right": "powerprofilesctl set power-saver",
+        "on-click-middle": "powerprofilesctl set balanced"
     },
 
     "idle_inhibitor": {

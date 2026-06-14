@@ -137,6 +137,7 @@ apt-get install -y \
     eza bat ripgrep fd-find \
     vim \
     brightnessctl \
+    power-profiles-daemon \
     gnome-keyring libsecret-tools seahorse \
     || warn "Some utilities failed"
 
@@ -193,6 +194,7 @@ systemctl enable lightdm 2>/dev/null || warn "lightdm enable failed"
 systemctl enable NetworkManager 2>/dev/null || warn "NetworkManager enable failed"
 systemctl enable bluetooth 2>/dev/null || warn "bluetooth enable failed"
 systemctl enable libvirtd 2>/dev/null || warn "libvirtd enable failed"
+systemctl enable power-profiles-daemon 2>/dev/null || warn "power-profiles-daemon enable failed"
 
 # Add user to groups + create dirs + download wallpapers
 if [ -n "${SUDO_USER:-}" ]; then

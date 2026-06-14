@@ -11,7 +11,7 @@ set $term kitty
 set $menu rofi -show drun -show-icons
 set $browser firefox
 set $files thunar
-set $locker swaylock -f -c 1e1e2e
+set $locker swaylock -f --config ~/.config/swaylock/config
 
 # ── Output ────────────────────────────────────────────────────────────────────
 output * bg #1e1e2e solid_color
