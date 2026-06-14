@@ -1,13 +1,12 @@
-/* Rofi default config — Catppuccin Mocha
-   Loaded automatically by rofi from ~/.config/rofi/config.rasi */
+/* Rofi default config — Catppuccin Mocha */
 
 configuration {
     modi:                "drun,run";
     show-icons:          true;
     icon-theme:          "hicolor";
     drun-display-format: "{name}";
-    display-drun:        "  Apps";
-    display-run:         "  Run";
+    display-drun:        " Apps";
+    display-run:         " Run";
     terminal:            "kitty";
     kb-cancel:           "Escape";
     font:                "monospace 11";
@@ -17,12 +16,14 @@ configuration {
     bg:          #1e1e2e;
     bg-alt:      #313244;
     fg:          #cdd6f4;
-    fg-dim:      #6c7086;
+    fg-dim:      #585b70;
     accent:      #cba6f7;
     selected-bg: #45475a;
+    selected-fg: #cdd6f4;
 
     background-color: transparent;
     text-color:       @fg;
+    border-color:     transparent;
 }
 
 window {
@@ -30,21 +31,22 @@ window {
     border:           2px solid;
     border-color:     @accent;
     border-radius:    12px;
-    width:            520px;
-    padding:          8px;
+    width:            680px;
+    padding:          0;
 }
 
 mainbox {
     background-color: transparent;
     spacing:          0;
     children:         [inputbar, listview];
+    border-radius:    12px;
 }
 
 inputbar {
     background-color: @bg-alt;
-    border-radius:    8px 8px 0 0;
-    padding:          10px 14px;
-    spacing:          8px;
+    border-radius:    10px 10px 0 0;
+    padding:          12px 16px;
+    spacing:          10px;
     children:         [prompt, entry];
 }
 
@@ -61,19 +63,21 @@ entry {
 }
 
 listview {
-    background-color: transparent;
-    padding:          6px 0;
-    lines:            8;
+    background-color: @bg;
+    border-radius:    0 0 10px 10px;
+    padding:          6px 4px;
+    lines:            9;
     scrollbar:        false;
     spacing:          2px;
 }
 
 element {
     background-color: transparent;
-    border-radius:    6px;
+    border-radius:    8px;
     padding:          8px 14px;
-    spacing:          10px;
+    spacing:          12px;
     children:         [element-icon, element-text];
+    cursor:           pointer;
 }
 
 element-icon {
@@ -85,6 +89,7 @@ element-text {
     background-color: transparent;
     text-color:       @fg;
     vertical-align:   0.5;
+    highlight:        none;
 }
 
 element.selected.normal {
@@ -92,9 +97,14 @@ element.selected.normal {
 }
 
 element.selected.normal element-text {
-    text-color: @fg;
+    text-color:  @selected-fg;
+    highlight:   none;
 }
 
-element.urgent {
-    background-color: #f38ba8;
+element.urgent element-text {
+    text-color: #f38ba8;
+}
+
+element.active element-text {
+    text-color: @accent;
 }

@@ -151,12 +151,18 @@ bindsym $mod+Shift+8 move container to workspace $ws8
 bindsym $mod+Shift+9 move container to workspace $ws9
 bindsym $mod+Shift+0 move container to workspace $ws10
 
-# Assign apps to workspaces
+# Assign apps to workspaces and auto-switch to them on launch
 assign [class="firefox"]           $ws2
 assign [class="thunderbird"]       $ws3
 assign [class="Thunar"]            $ws4
 assign [class="libreoffice.*"]     $ws5
 assign [class="virt-manager"]      $ws9
+
+for_window [class="firefox"]       focus
+for_window [class="thunderbird"]   focus
+for_window [class="Thunar"]        focus
+for_window [class="libreoffice.*"] focus
+for_window [class="virt-manager"]  focus
 
 # Float certain apps
 for_window [class="Pavucontrol"]   floating enable
