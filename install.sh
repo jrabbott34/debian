@@ -154,7 +154,13 @@ apt-get install -y \
 
 # ── Display manager ───────────────────────────────────────────────────────────
 info "Installing LightDM..."
-apt-get install -y lightdm lightdm-gtk-greeter || warn "lightdm failed"
+apt-get install -y lightdm slick-greeter || warn "lightdm failed"
+
+# Set slick-greeter as default
+cat > /etc/lightdm/lightdm.conf <<'EOF'
+[Seat:*]
+greeter-session=slick-greeter
+EOF
 
 # Create sway session for LightDM
 mkdir -p /usr/share/wayland-sessions
@@ -191,6 +197,13 @@ fi
 # ── Enable services ───────────────────────────────────────────────────────────
 info "Enabling services..."
 systemctl enable lightdm 2>/dev/null || warn "lightdm enable failed"
+
+# Deploy slick-greeter config
+SCRIPT_DIR_TMP="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR_TMP/configs/lightdm/slick-greeter.conf" ]; then
+    mkdir -p /etc/lightdm
+    cp "$SCRIPT_DIR_TMP/configs/lightdm/slick-greeter.conf" /etc/lightdm/slick-greeter.conf
+fi
 systemctl enable NetworkManager 2>/dev/null || warn "NetworkManager enable failed"
 systemctl enable bluetooth 2>/dev/null || warn "bluetooth enable failed"
 systemctl enable libvirtd 2>/dev/null || warn "libvirtd enable failed"
