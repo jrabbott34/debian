@@ -208,7 +208,7 @@ for_window [app_id="nwg-look"]     floating enable
 for_window [app_id="qt5ct"]        floating enable
 for_window [app_id="qt6ct"]        floating enable
 for_window [app_id="waybar"]       border none
-for_window [app_id="nmtui"]        floating enable, resize set 600 400
+for_window [app_id="nmtui"]        floating enable, resize set 900 600
 for_window [app_id="yad"]          floating enable
 for_window [title="(?i).*calculator.*"] floating enable
 

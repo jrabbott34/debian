@@ -39,15 +39,14 @@
 
     "clock": {
         "format": "  {:%a %b %d   %I:%M %p}",
-        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-        "on-click": "~/.config/waybar/scripts/calendar-popup.sh"
+        "tooltip-format": "<big>{:%B %Y}</big>\n<tt><small>{calendar}</small></tt>"
     },
 
     "custom/weather": {
         "exec": "~/.config/waybar/scripts/weather.sh",
+        "return-type": "json",
         "interval": 600,
-        "on-click": "~/.config/waybar/scripts/weather-popup.sh",
-        "tooltip": false
+        "tooltip": true
     },
 
     "network": {
