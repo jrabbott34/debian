@@ -29,6 +29,13 @@ input "type:keyboard" {
     # xkb_options caps:escape  # uncomment to remap caps lock to escape
 }
 
+# Disable trackpoint (pointer stick / middle keyboard nub)
+input "type:pointer" {
+    events disabled
+}
+# Re-enable external mice if needed — uncomment and set your mouse's identifier:
+# input "1234:5678:Your_Mouse_Name" { events enabled }
+
 # ── Gaps & borders ────────────────────────────────────────────────────────────
 gaps inner 8
 gaps outer 4
@@ -36,6 +43,13 @@ default_border pixel 2
 default_floating_border pixel 2
 smart_gaps on
 smart_borders on
+
+# SwayFX extras (ignored by standard sway, active if using swayfx)
+corner_radius 10
+blur enable
+blur_passes 2
+shadows enable
+shadow_blur_radius 20
 
 # Catppuccin Mocha colors
 # class                 border    bg        text      indicator child_border
