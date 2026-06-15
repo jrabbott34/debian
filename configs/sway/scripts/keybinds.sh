@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Show all sway keybinds in a rofi menu
+# Show all sway keybinds in a rofi menu by parsing the config
 
-swaymsg -t get_bindings | jq -r '.[] | "\(.event_state_mask | join("+"))+\(.symbol // .input_code | tostring)  →  \(.command)"' \
+grep -E '^\s*bindsym' ~/.config/sway/config \
+    | sed 's/^\s*bindsym\s*//' \
+    | sed 's/\$mod/Super/g' \
+    | awk '{key=$1; $1=""; printf "%-30s →%s\n", key, $0}' \
     | sort \
-    | sed 's/^+//' \
     | rofi -dmenu \
            -p "󰌌 Keybinds" \
            -i \
