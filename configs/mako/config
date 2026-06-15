@@ -16,6 +16,7 @@ default-timeout=5000
 ignore-timeout=0
 
 font=JetBrainsMono Nerd Font 11
+markup=1
 
 [app-name=osd]
 group-by=app-name
@@ -24,7 +25,8 @@ background-color=#313244
 border-color=#cba6f7
 text-color=#cba6f7
 border-size=2
-format=<b>%s</b>\n<span color="#89b4fa">%b</span>
+markup=1
+format=<b>%s</b>\n<span foreground="#89b4fa">%b</span>
 
 [urgency=low]
 border-color=#89b4fa
