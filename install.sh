@@ -238,6 +238,34 @@ if [ -n "${SUDO_USER:-}" ]; then
     done
 fi
 
+# ── Catppuccin GRUB theme ────────────────────────────────────────────────────
+info "Installing Catppuccin GRUB theme..."
+(
+    tmpdir=$(mktemp -d)
+    curl -fsSL --max-time 30 \
+        "https://github.com/catppuccin/grub/releases/download/v1.0.0/catppuccin-grub-theme.tar.gz" \
+        -o "$tmpdir/grub-theme.tar.gz" 2>/dev/null
+    if [ -f "$tmpdir/grub-theme.tar.gz" ]; then
+        tar -xzf "$tmpdir/grub-theme.tar.gz" -C "$tmpdir"
+        mkdir -p /usr/share/grub/themes
+        cp -r "$tmpdir/catppuccin-mocha-grub-theme" /usr/share/grub/themes/ 2>/dev/null || \
+        cp -r "$tmpdir"/catppuccin-* /usr/share/grub/themes/ 2>/dev/null
+        # Set theme in grub config
+        if ! grep -q "GRUB_THEME" /etc/default/grub; then
+            echo 'GRUB_THEME="/usr/share/grub/themes/catppuccin-mocha-grub-theme/theme.txt"' \
+                >> /etc/default/grub
+        else
+            sed -i 's|.*GRUB_THEME=.*|GRUB_THEME="/usr/share/grub/themes/catppuccin-mocha-grub-theme/theme.txt"|' \
+                /etc/default/grub
+        fi
+        update-grub 2>/dev/null || warn "update-grub failed"
+        info "Catppuccin GRUB theme installed"
+    else
+        warn "Could not download GRUB theme"
+    fi
+    rm -rf "$tmpdir"
+) || warn "GRUB theme install failed"
+
 # ── Starship prompt ───────────────────────────────────────────────────────────
 info "Installing Starship prompt..."
 curl -fsSL https://starship.rs/install.sh | sh -s -- --yes || warn "Starship install failed"
