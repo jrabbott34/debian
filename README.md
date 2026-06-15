@@ -4,6 +4,8 @@ Debian 12 (Bookworm) and Debian 13 (Trixie) daily-driver build — Sway + Waylan
 
 Catppuccin Mocha theme throughout. Pill-style Waybar. No GNOME dependencies.
 
+![Desktop Screenshot](screenshot.png)
+
 ## Stack
 
 | Layer | Choice |
