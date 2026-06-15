@@ -187,14 +187,14 @@ bindsym $mod+Shift+9 move container to workspace $ws9
 bindsym $mod+Shift+0 move container to workspace $ws10
 
 # Volume
-bindsym XF86AudioRaiseVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ && pkill -RTMIN+8 waybar
-bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- && pkill -RTMIN+8 waybar
-bindsym XF86AudioMute        exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && pkill -RTMIN+8 waybar
+bindsym XF86AudioRaiseVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ && ~/.config/sway/scripts/osd.sh volume
+bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- && ~/.config/sway/scripts/osd.sh volume
+bindsym XF86AudioMute        exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && ~/.config/sway/scripts/osd.sh volume
 bindsym XF86AudioMicMute     exec wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
 
 # Brightness
-bindsym XF86MonBrightnessUp   exec brightnessctl set 5%+
-bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
+bindsym XF86MonBrightnessUp   exec brightnessctl set 5%+ && ~/.config/sway/scripts/osd.sh brightness
+bindsym XF86MonBrightnessDown exec brightnessctl set 5%- && ~/.config/sway/scripts/osd.sh brightness
 
 # Media
 bindsym XF86AudioPlay  exec playerctl play-pause
