@@ -15,15 +15,13 @@ case "$TYPE" in
             ICON="󰕾"; MSG="${VOL}%"
         fi
         BAR=$(printf '█%.0s' $(seq 1 $((VOL / 5))))
-        makoctl dismiss --all 2>/dev/null
-        notify-send -t 1500 "$ICON  Volume  ${VOL}%" "$BAR"
+        notify-send -a osd -t 1500 "$ICON  Volume  ${VOL}%" "$BAR"
         ;;
     brightness)
         BRIGHT=$(brightnessctl get)
         MAX=$(brightnessctl max)
         PCT=$(( BRIGHT * 100 / MAX ))
         BAR=$(printf '█%.0s' $(seq 1 $((PCT / 5))))
-        makoctl dismiss --all 2>/dev/null
-        notify-send -t 1500 "󰃞  Brightness  ${PCT}%" "$BAR"
+        notify-send -a osd -t 1500 "󰃞  Brightness  ${PCT}%" "$BAR"
         ;;
 esac

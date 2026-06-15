@@ -17,6 +17,11 @@ ignore-timeout=0
 
 font=JetBrainsMono Nerd Font 11
 
+[app-name=osd]
+group-by=app-name
+default-timeout=1500
+border-color=#89b4fa
+
 [urgency=low]
 border-color=#89b4fa
 default-timeout=3000
