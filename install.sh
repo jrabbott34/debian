@@ -242,15 +242,10 @@ fi
 info "Installing Catppuccin GRUB theme..."
 (
     tmpdir=$(mktemp -d)
-    curl -fsSL --max-time 30 \
-        "https://github.com/catppuccin/grub/releases/download/v1.0.0/catppuccin-grub-theme.tar.gz" \
-        -o "$tmpdir/grub-theme.tar.gz" 2>/dev/null
-    if [ -f "$tmpdir/grub-theme.tar.gz" ]; then
-        tar -xzf "$tmpdir/grub-theme.tar.gz" -C "$tmpdir"
+    git clone --depth=1 https://github.com/catppuccin/grub.git "$tmpdir/grub" 2>/dev/null
+    if [ -d "$tmpdir/grub/src/catppuccin-mocha-grub-theme" ]; then
         mkdir -p /usr/share/grub/themes
-        cp -r "$tmpdir/catppuccin-mocha-grub-theme" /usr/share/grub/themes/ 2>/dev/null || \
-        cp -r "$tmpdir"/catppuccin-* /usr/share/grub/themes/ 2>/dev/null
-        # Set theme in grub config
+        cp -r "$tmpdir/grub/src/catppuccin-mocha-grub-theme" /usr/share/grub/themes/
         if ! grep -q "GRUB_THEME" /etc/default/grub; then
             echo 'GRUB_THEME="/usr/share/grub/themes/catppuccin-mocha-grub-theme/theme.txt"' \
                 >> /etc/default/grub
@@ -261,7 +256,7 @@ info "Installing Catppuccin GRUB theme..."
         update-grub 2>/dev/null || warn "update-grub failed"
         info "Catppuccin GRUB theme installed"
     else
-        warn "Could not download GRUB theme"
+        warn "Could not clone GRUB theme"
     fi
     rm -rf "$tmpdir"
 ) || warn "GRUB theme install failed"
