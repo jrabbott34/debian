@@ -16,7 +16,7 @@ case "$TYPE" in
         EMPTY=$((20 - FILLED))
         BAR="$(printf '▰%.0s' $(seq 1 $FILLED))$(printf '▱%.0s' $(seq 1 $EMPTY))"
         TITLE="$ICON  Volume  ${VOL}%"
-        BODY="$BAR"
+        BODY="<span foreground='#89b4fa'>$BAR</span>"
         ;;
     brightness)
         BRIGHT=$(brightnessctl get)
@@ -26,7 +26,7 @@ case "$TYPE" in
         EMPTY=$((20 - FILLED))
         BAR="$(printf '▰%.0s' $(seq 1 $FILLED))$(printf '▱%.0s' $(seq 1 $EMPTY))"
         TITLE="󰃞  Brightness  ${PCT}%"
-        BODY="$BAR"
+        BODY="<span foreground='#fab387'>$BAR</span>"
         ;;
 esac
 
