@@ -20,7 +20,10 @@ font=JetBrainsMono Nerd Font 11
 [app-name=osd]
 group-by=app-name
 default-timeout=1500
-border-color=#89b4fa
+background-color=#313244
+border-color=#cba6f7
+text-color=#cba6f7
+border-size=2
 
 [urgency=low]
 border-color=#89b4fa

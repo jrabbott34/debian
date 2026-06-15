@@ -12,7 +12,9 @@ case "$TYPE" in
         elif [ "$VOL" -lt 33 ]; then ICON="󰕿"; MSG="${VOL}%"
         elif [ "$VOL" -lt 66 ]; then ICON="󰖀"; MSG="${VOL}%"
         else ICON="󰕾"; MSG="${VOL}%"; fi
-        BAR=$(printf '█%.0s' $(seq 1 $((VOL / 5))))
+        FILLED=$((VOL / 5))
+        EMPTY=$((20 - FILLED))
+        BAR="$(printf '▰%.0s' $(seq 1 $FILLED))$(printf '▱%.0s' $(seq 1 $EMPTY))"
         TITLE="$ICON  Volume  ${VOL}%"
         BODY="$BAR"
         ;;
@@ -20,7 +22,9 @@ case "$TYPE" in
         BRIGHT=$(brightnessctl get)
         MAX=$(brightnessctl max)
         PCT=$(( BRIGHT * 100 / MAX ))
-        BAR=$(printf '█%.0s' $(seq 1 $((PCT / 5))))
+        FILLED=$((PCT / 5))
+        EMPTY=$((20 - FILLED))
+        BAR="$(printf '▰%.0s' $(seq 1 $FILLED))$(printf '▱%.0s' $(seq 1 $EMPTY))"
         TITLE="󰃞  Brightness  ${PCT}%"
         BODY="$BAR"
         ;;
