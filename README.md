@@ -2,7 +2,7 @@
 
 Debian 12 (Bookworm) and Debian 13 (Trixie) daily-driver build — Sway + Wayland
 
-Catppuccin Mocha theme throughout. Pill-style Waybar. No GNOME dependencies.
+Catppuccin Mocha theme throughout. Pill-style Waybar. No GNOME dependencies. Tried to create a fun looking Debian (Wayland) Sway build that sort of has a hyprland feel. Just Sway though, not SwayFX
 
 ![Desktop Screenshot](screenshot.png)
 
