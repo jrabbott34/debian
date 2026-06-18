@@ -87,16 +87,31 @@ if [ -f "$TOUCHPAD_CONF" ]; then
     info "Copied touchpad config to /etc/X11/xorg.conf.d/"
 fi
 
-# ── Zsh setup ────────────────────────────────────────────────────────────────
-info "Setting up zsh..."
-if [ -f "$REPO_DIR/configs/shell/zshrc" ]; then
-    if [ ! -f ~/.zshrc ] || ! grep -q "debian-dotfiles" ~/.zshrc 2>/dev/null; then
-        cp "$REPO_DIR/configs/shell/zshrc" ~/.zshrc
-        info "Installed ~/.zshrc"
-    else
-        info "~/.zshrc already configured, skipping"
-    fi
+# ── Oh My Zsh ────────────────────────────────────────────────────────────────
+info "Setting up Oh My Zsh..."
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || warn "Oh My Zsh install failed"
+else
+    info "Oh My Zsh already installed, skipping"
 fi
+
+# Install zsh-autosuggestions plugin for OMZ
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+if [ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]; then
+    git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions \
+        "$ZSH_CUSTOM/plugins/zsh-autosuggestions" 2>/dev/null || warn "zsh-autosuggestions clone failed"
+fi
+
+# Install zsh-syntax-highlighting plugin for OMZ
+if [ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
+    git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting \
+        "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" 2>/dev/null || warn "zsh-syntax-highlighting clone failed"
+fi
+
+# Deploy zshrc
+cp "$REPO_DIR/configs/shell/zshrc" ~/.zshrc
+info "Installed ~/.zshrc"
+
 if command -v zsh &>/dev/null && [ "$SHELL" != "$(command -v zsh)" ]; then
     chsh -s "$(command -v zsh)"
     info "Default shell set to zsh — takes effect on next login"
