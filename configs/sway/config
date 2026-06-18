@@ -259,9 +259,12 @@ for_window [class="Lxappearance"] floating enable
 # 3-finger swipe left/right to switch workspaces
 bindgesture swipe:3:right exec ~/.config/sway/scripts/workspace-nav.sh prev
 bindgesture swipe:3:left  exec ~/.config/sway/scripts/workspace-nav.sh next
-# 4-finger swipe moves window to adjacent workspace
+# 4-finger swipe left/right to switch workspaces
 bindgesture swipe:4:right exec ~/.config/sway/scripts/workspace-nav.sh prev
 bindgesture swipe:4:left  exec ~/.config/sway/scripts/workspace-nav.sh next
+# 4-finger swipe up/down for terminal and power menu
+bindgesture swipe:4:up   exec $term
+bindgesture swipe:4:down exec ~/.config/rofi/scripts/powermenu.sh
 
 # ── Include ───────────────────────────────────────────────────────────────────
 include /etc/sway/config.d/*
