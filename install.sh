@@ -112,6 +112,7 @@ apt-get install -y \
     mousepad gedit \
     yad \
     nwg-look lxappearance qt5ct \
+    gnome-themes-extra papirus-icon-theme \
     || warn "Some desktop apps failed"
 
 info "Installing audio (PipeWire)..."
