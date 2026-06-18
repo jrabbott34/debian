@@ -102,8 +102,8 @@ bindsym $mod+Shift+e exec $locker
 # Fullscreen
 bindsym $mod+f fullscreen toggle
 
-# Float toggle
-bindsym $mod+Shift+f floating toggle
+# Float toggle — resize to 60% of screen when enabling
+bindsym $mod+Shift+f floating toggle; [floating] resize set 60 ppt 60 ppt
 
 # Mod+left-click drag to move, Mod+right-click drag to resize
 floating_modifier $mod normal
