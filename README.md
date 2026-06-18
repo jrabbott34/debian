@@ -46,6 +46,7 @@ Catppuccin Mocha theme throughout. Pill-style Waybar. No GNOME dependencies. Tri
 | `Super+Shift+b` | Toggle Waybar |
 | `Super+b` | Firefox (workspace 2) |
 | `Super+e` | Thunar (workspace 4) |
+| `Super+m` | Thunderbird (workspace 3) |
 | `Super+Shift+w` | Random wallpaper |
 | `Super+Shift+r` | Reload Sway config |
 | `Super+r` | Resize mode |

@@ -88,9 +88,10 @@ bindsym $mod+Shift+Return exec foot
 # Launcher
 bindsym $mod+space exec $menu
 
-# Browser / Files
+# Browser / Files / Mail
 bindsym $mod+b exec $browser
 bindsym $mod+e exec $files
+bindsym $mod+m exec thunderbird
 
 # Kill window
 bindsym $mod+q kill
