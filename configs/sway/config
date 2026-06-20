@@ -43,7 +43,7 @@ input "type:keyboard" {
 }
 
 # Disable trackpoint (pointer stick / middle keyboard nub)
-input "type:pointer" {
+input "2:1:PS/2_Generic_Mouse" {
     events disabled
 }
 # Re-enable external mice if needed — uncomment and set your mouse's identifier:
