@@ -132,6 +132,14 @@ apt-get install -y \
     bluez bluetooth blueman \
     || warn "Some network/bt packages failed"
 
+info "Installing printing (CUPS)..."
+apt-get install -y \
+    cups cups-client cups-filters \
+    system-config-printer \
+    printer-driver-all \
+    || warn "Some printing packages failed"
+systemctl enable cups 2>/dev/null || warn "cups enable failed"
+
 info "Installing system utilities..."
 apt-get install -y \
     nala fastfetch htop btop \
