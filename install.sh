@@ -223,7 +223,7 @@ if [ -n "${SUDO_USER:-}" ]; then
     USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
 
     info "Adding $SUDO_USER to groups..."
-    for grp in libvirt libvirt-qemu kvm input video audio plugdev bluetooth; do
+    for grp in libvirt libvirt-qemu kvm input video audio plugdev bluetooth lpadmin; do
         usermod -aG "$grp" "$SUDO_USER" 2>/dev/null || true
     done
 
