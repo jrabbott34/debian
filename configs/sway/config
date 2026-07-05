@@ -68,7 +68,7 @@ client.urgent           #f38ba8   #f38ba8   #1e1e2e   #f38ba8   #f38ba8
 exec gammastep -l 38.25:-85.76 -t 6500:3000
 exec mako
 exec nm-applet --indicator
-exec /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+exec lxpolkit
 exec gnome-keyring-daemon --start --components=secrets,pkcs11
 exec waybar
 exec_always ~/.config/sway/scripts/bg.sh

@@ -113,6 +113,7 @@ apt-get install -y \
     yad \
     nwg-look lxappearance qt5ct \
     gnome-themes-extra papirus-icon-theme \
+    lxpolkit \
     || warn "Some desktop apps failed"
 
 info "Installing audio (PipeWire)..."
